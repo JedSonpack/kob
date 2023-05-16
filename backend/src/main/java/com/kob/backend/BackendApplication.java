@@ -11,3 +11,4 @@ public class BackendApplication {
     }
 
 }
+    npm config set cache "D:\\Nodejs\\node_cache"
