@@ -1,6 +1,7 @@
 <template>
     <div ref="parent" class="gamemap"> 
-        <canvas ref="canvas"></canvas> <!--画布标签-->
+
+        <canvas ref="canvas" tabindex="0"></canvas> <!--画布标签,可以接受用户操作-->
             </div>
 </template>
 
