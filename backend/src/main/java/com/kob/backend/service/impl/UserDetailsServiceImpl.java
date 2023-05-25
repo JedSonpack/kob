@@ -25,6 +25,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new RuntimeException("用户不存在");
         }
 
-        return new UserDetailsImpl(user);
+        return new UserDetailsImpl(user); //与数据库终信息一致的话，给用户发Session Id 存到cookie里面
     }
 }
