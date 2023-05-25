@@ -13,6 +13,6 @@
 
 <style scoped>
 div.content-field {
-    margin-top: 20px;
+    margin-top: 50px;
 }
 </style>

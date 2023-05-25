@@ -7,6 +7,7 @@ export default {
     photo: "",
     token: "",
     is_login: false,
+    pulling_info: true, //当前是否在获取信息中
   },
   getters: {
     //一般用不到
@@ -22,6 +23,9 @@ export default {
 
     updateToken(state, token) {
       state.token = token;
+    },
+    updatePullingInfo(state, pulling_info) {
+      state.pulling_info = pulling_info;
     },
     logout(state) {
       state.id = "";
@@ -44,6 +48,7 @@ export default {
         },
         success(resp) {
           if (resp.error_message === "success") {
+            localStorage.setItem("jwt_token", resp.token);
             context.commit("updateToken", resp.token);
             data.success(resp);
           } else {
@@ -79,6 +84,7 @@ export default {
       });
     },
     logout(context) {
+      localStorage.removeItem("jwt_token");
       context.commit("logout");
     },
   },

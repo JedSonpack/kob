@@ -33,7 +33,7 @@
           </li>
         </ul>
 
-        <ul class="navbar-nav" v-if="$store.state.user.is_login">
+        <ul class="navbar-nav" v-if="$store.state.user.is_login"> 
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -61,7 +61,7 @@
           </li>
         </ul>
 
-        <ul class="navbar-nav" v-else>
+        <ul class="navbar-nav" v-else-if="!$store.state.user.pulling_info">     <!--没在拉取信息 已经拉取过了-->
           <li class="nav-item">
             <router-link
               class="nav-link"
