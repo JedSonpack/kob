@@ -31,7 +31,6 @@
   </ContentField>
 </template>
 
-
 <script>
 import ContentField from "@/components/ContentField.vue";
 import { useStore } from "vuex";
@@ -50,22 +49,21 @@ export default {
     let error_message = ref("");
 
     const jwt_token = localStorage.getItem("jwt_token");
-
     if (jwt_token) {
-      store.commit("updateToken", jwt_token);
-      store.dispatch("getinfo", {
-        success() {
-          router.push({ name: "home" });
-          store.commit("updatePullingInfo", false);
-        },
-        error() {
-          store.commit("updatePullingInfo", false);
-        },
-      });
-    } else {
-      store.commit("updatePullingInfo", false);
-      console.log(store.state.user.pulling_info);
-    }
+            store.commit("updateToken", jwt_token);
+            store.dispatch("getinfo", {
+                success() {
+                    router.push({ name: "home" });
+                    store.commit("updatePullingInfo", false);
+                },
+                error() {
+                    store.commit("updatePullingInfo", false);
+                }
+            })
+        } else {
+            store.commit("updatePullingInfo", false);
+        }
+
 
     const login = () => {
       //点击submit按钮
