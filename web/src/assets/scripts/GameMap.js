@@ -38,16 +38,20 @@ export class GameMap extends AcGameObject {
   add_listening_events() {
     this.ctx.canvas.focus();
 
-    const [snake0, snake1] = this.snakes;
     this.ctx.canvas.addEventListener("keydown", (e) => {
-      if (e.key === "w") snake0.set_direction(0);
-      else if (e.key === "d") snake0.set_direction(1);
-      else if (e.key === "s") snake0.set_direction(2);
-      else if (e.key === "a") snake0.set_direction(3);
-      else if (e.key === "ArrowUp") snake1.set_direction(0);
-      else if (e.key === "ArrowRight") snake1.set_direction(1);
-      else if (e.key === "ArrowDown") snake1.set_direction(2);
-      else if (e.key === "ArrowLeft") snake1.set_direction(3);
+      let d = -1;
+      if (e.key === "w") d = 0;
+      else if (e.key === "d") d = 1;
+      else if (e.key === "s") d = 2;
+      else if (e.key === "a") d = 3;
+      if (d >= 0) {
+        this.store.state.pk.socket.send(
+          JSON.stringify({
+            event: "move",
+            direction: d,
+          })
+        );
+      }
     });
   }
 
@@ -84,26 +88,26 @@ export class GameMap extends AcGameObject {
     }
   }
 
-  check_valid(cell) {
-    // 检测目标位置是否合法：没有撞到两条蛇的身体和障碍物
-    for (const wall of this.walls) {
-      if (wall.r === cell.r && wall.c === cell.c) return false;
-    }
+  // check_valid(cell) {
+  //   // 检测目标位置是否合法：没有撞到两条蛇的身体和障碍物
+  //   for (const wall of this.walls) {
+  //     if (wall.r === cell.r && wall.c === cell.c) return false;
+  //   }
 
-    for (const snake of this.snakes) {
-      let k = snake.cells.length;
-      if (!snake.check_tail_increasing()) {
-        // 当蛇尾会前进的时候，蛇尾不要判断
-        k--;
-      }
-      for (let i = 0; i < k; i++) {
-        if (snake.cells[i].r === cell.r && snake.cells[i].c === cell.c)
-          return false;
-      }
-    }
+  //   for (const snake of this.snakes) {
+  //     let k = snake.cells.length;
+  //     if (!snake.check_tail_increasing()) {
+  //       // 当蛇尾会前进的时候，蛇尾不要判断
+  //       k--;
+  //     }
+  //     for (let i = 0; i < k; i++) {
+  //       if (snake.cells[i].r === cell.r && snake.cells[i].c === cell.c)
+  //         return false;
+  //     }
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   update() {
     this.update_size();

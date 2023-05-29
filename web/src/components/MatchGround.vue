@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <div class="col-12" style="text-align: center; padding-top: 0vh">
+      <div class="col-12" style="text-align: center; padding-top: 15vh">
         <button
           @click="click_match_btn"
           type="button"
@@ -86,6 +86,7 @@ div.user-username1 {
   font-size: 24px;
   font-weight: 600;
   color: red;
+  font-style: italic;
   padding-top: 2vh;
 }
 
@@ -94,6 +95,7 @@ div.user-username2 {
   font-size: 24px;
   font-weight: 600;
   color: blue;
+  font-style: italic;
   padding-top: 2vh;
 }
 </style>
