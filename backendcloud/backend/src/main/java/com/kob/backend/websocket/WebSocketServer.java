@@ -1,8 +1,10 @@
 package com.kob.backend.websocket;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kob.backend.mapper.BotMapper;
 import com.kob.backend.mapper.RecordMapper;
 import com.kob.backend.mapper.UserMapper;
+import com.kob.backend.pojo.Bot;
 import com.kob.backend.pojo.Record;
 import com.kob.backend.pojo.User;
 import com.kob.backend.websocket.utils.Game;
@@ -35,10 +37,10 @@ public class WebSocketServer {
     private User user;
 
     // 需要注入usermapper 单是由于是多线程，所以注入有区别
-    private static UserMapper userMapper;
+    public static UserMapper userMapper;
 
     // 存储游戏对象
-    private Game game = null;
+    public Game game = null;
 
     //路径
     private final static String addPlayerUrl = "http://127.0.0.1:3001/player/add/";
@@ -46,7 +48,14 @@ public class WebSocketServer {
 
 
     public static RecordMapper recordMapper;
-    private static RestTemplate restTemplate;
+    public static RestTemplate restTemplate;
+    private static BotMapper botMapper;
+
+    @Autowired
+    public void setBotMapper(BotMapper botMapper) {
+        WebSocketServer.botMapper = botMapper;
+    }
+
 
     @Autowired
     public void setRecordMapper(RecordMapper recordMapper) {
@@ -93,9 +102,20 @@ public class WebSocketServer {
         }
     }
 
-    public static void startGame(Integer aId, Integer bId) {
+    public static void startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId) {
         User a = userMapper.selectById(aId), b = userMapper.selectById(bId);
-        Game game = new Game(13, 14, 20, a.getId(), b.getId());
+
+        Bot botA = botMapper.selectById(aBotId);
+        Bot botB = botMapper.selectById(bBotId);
+
+        Game game = new Game(13,
+                14,
+                15,
+                a.getId(),
+                botA,
+                b.getId(),
+                botB
+        );
         game.createMap();
         if (users.get(a.getId()) != null)
             users.get(a.getId()).game = game;
@@ -128,10 +148,12 @@ public class WebSocketServer {
         respB.put("game", respGame);
         if (users.get(b.getId()) != null)
             users.get(b.getId()).sendMessage(respB.toJSONString());
+
+
     }
 
 
-    private void startMatching() {
+    private void startMatching(Integer bot_id) {
 
         System.out.println("start matching!");
         //像后端发请求
@@ -140,6 +162,8 @@ public class WebSocketServer {
         data.add("user_id", this.user.getId().toString());
 
         data.add("rating", this.user.getRating().toString());
+
+        data.add("bot_id", bot_id.toString());
 
 
         restTemplate.postForObject(addPlayerUrl, data, String.class); //返回值的class
@@ -156,10 +180,13 @@ public class WebSocketServer {
 
     private void move(int d) { //收到消息后进行移动
         if (game.getPlayerA().getId().equals(user.getId())) {
-            game.setNextStepA(d);
+            if (game.getPlayerA().getBotId().equals(-1))  // 亲自出马 否则屏蔽输入
+                game.setNextStepA(d);
         } else if (game.getPlayerB().getId().equals(user.getId())) {
-            game.setNextStepB(d);
+            if (game.getPlayerB().getBotId().equals(-1))  // 亲自出马
+                game.setNextStepB(d);
         }
+
     }
 
 
@@ -170,7 +197,7 @@ public class WebSocketServer {
         JSONObject data = JSONObject.parseObject(message);
         String event = data.getString("event");
         if ("start-matching".equals(event)) {
-            startMatching();
+            startMatching(Integer.parseInt(data.getString("bot_id")));
         } else if ("stop-matching".equals(event)) {
             stopMatching();
         } else if ("move".equals(event)) {

@@ -1,13 +1,13 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import PkIndexView from '../views/pk/PkindexView'
-import RecordIndexView from '../views/record/RecordindexView'
-import RanklistIndexView from '../views/ranklist/RanklistindexView'
-import UserBotIndexView from '../views/user/bot/UserbotindexView'
-import NotFound from '../views/error/NotFound'
-import UserAccountLoginView from "@/views/user/account/UserAccountLoginView"
-import UserAccountRegisterView from "@/views/user/account/UserAccountRegisterView"
-import store from '../store/index'
-
+import { createRouter, createWebHistory } from "vue-router";
+import PkIndexView from "../views/pk/PkindexView";
+import RecordIndexView from "../views/record/RecordindexView";
+import RecordContentView from "../views/record/RecordContentView";
+import RanklistIndexView from "../views/ranklist/RanklistindexView";
+import UserBotIndexView from "../views/user/bot/UserbotindexView";
+import NotFound from "../views/error/NotFound";
+import UserAccountLoginView from "@/views/user/account/UserAccountLoginView";
+import UserAccountRegisterView from "@/views/user/account/UserAccountRegisterView";
+import store from "../store/index";
 
 const routes = [
   {
@@ -16,8 +16,7 @@ const routes = [
     redirect: "/pk/",
     meta: {
       requestAuth: true,
-    }
-
+    },
   },
   {
     path: "/pk/",
@@ -25,8 +24,7 @@ const routes = [
     component: PkIndexView,
     meta: {
       requestAuth: true,
-    }
-
+    },
   },
   {
     path: "/record/",
@@ -34,17 +32,24 @@ const routes = [
     component: RecordIndexView,
     meta: {
       requestAuth: true,
-    }
-
+    },
   },
+  {
+    path: "/record/:recordId/",
+    name: "record_content",
+    component: RecordContentView,
+    meta: {
+      requestAuth: true,
+    },
+  },
+
   {
     path: "/ranklist/",
     name: "ranklist_index",
     component: RanklistIndexView,
     meta: {
       requestAuth: true,
-    }
-
+    },
   },
   {
     path: "/user/bot/",
@@ -52,8 +57,7 @@ const routes = [
     component: UserBotIndexView,
     meta: {
       requestAuth: true,
-    }
-
+    },
   },
   {
     path: "/user/account/login/",
@@ -61,17 +65,15 @@ const routes = [
     component: UserAccountLoginView,
     meta: {
       requestAuth: false,
-    }
-
+    },
   },
   {
     path: "/user/account/register/",
     name: "user_account_register",
-    component:UserAccountRegisterView,
+    component: UserAccountRegisterView,
     meta: {
       requestAuth: false,
-    }
-
+    },
   },
   {
     path: "/404/",
@@ -79,27 +81,25 @@ const routes = [
     component: NotFound,
     meta: {
       requestAuth: false,
-    }
-
+    },
   },
   {
     path: "/:catchAll(.*)",
-    redirect: "/404/"
-  }
-]
+    redirect: "/404/",
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
+});
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requestAuth && !store.state.user.is_login) {
-    next({name: "user_account_login"});
+    next({ name: "user_account_login" });
   } else {
     next();
   }
-})
+});
 
-
-export default router
+export default router;
