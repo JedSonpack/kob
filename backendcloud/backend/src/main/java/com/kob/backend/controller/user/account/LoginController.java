@@ -10,12 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/user/")
 public class LoginController {
     @Autowired
     private LoginService loginService;
 
-    @PostMapping("/account/token/")
+    @PostMapping("/api/user/account/token/")
     public Map<String,String> getToken(@RequestParam Map<String,String> map){
         String usernmae=map.get("username");
         String passowrd=map.get("password");

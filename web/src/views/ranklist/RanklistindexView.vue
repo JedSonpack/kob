@@ -3,16 +3,21 @@
     <table class="table table-striped table-hover" style="text-align: center">
       <thead>
         <tr>
+          <th>排名</th>
           <th>玩家</th>
           <th>天梯分</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id">
+        <tr v-for="(user, index) in users" :key="user.id">
+          <td>{{ index + 1 }}</td>
           <td>
             <img :src="user.photo" alt="" class="record-user-photo" />
             &nbsp;
-            <span class="record-user-username">{{ user.username }}</span>
+            <span v-if="index == 0" class="record-user-username">{{
+              user.username
+            }}</span>
+            <span v-else-if="index >= 1">{{ user.username }}</span>
           </td>
           <td>{{ user.rating }}</td>
         </tr>
@@ -82,7 +87,7 @@ export default {
     const pull_page = (page) => {
       current_page = page;
       $.ajax({
-        url: "http://127.0.0.1:3000/ranklist/getlist/",
+        url: "https://app4186.acapp.acwing.com.cn/api/ranklist/getlist/",
         data: {
           page,
         },

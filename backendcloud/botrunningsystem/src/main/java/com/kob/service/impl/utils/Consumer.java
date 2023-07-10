@@ -8,7 +8,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Component
 public class Consumer extends Thread {
@@ -36,7 +40,7 @@ public class Consumer extends Thread {
 
     private String addUid(String code, String uid) {  // 在code中的Bot类名后添加uid
 
-        int k = code.indexOf(" implements com.kob.service.impl.utils.BotInterface");
+        int k = code.indexOf(" implements java.util.function.Supplier<Integer>");
         return code.substring(0, k) + uid + code.substring(k);
     }
 
@@ -45,20 +49,27 @@ public class Consumer extends Thread {
         UUID uuid = UUID.randomUUID();
         String uid = uuid.toString().substring(0, 8);
 
-        BotInterface botInterface = Reflect.compile(
-                "com.kob.test.Bot" + uid,  //让每次都进行编译
+        Supplier<Integer> botInterface = Reflect.compile(
+                "com.kob.test.Bot" + uid,
                 addUid(bot.getBotCode(), uid)
         ).create().get();
 
-        Integer direction = botInterface.nextMove(bot.getInput());
+        File file = new File("input.txt");
+        try (PrintWriter fout = new PrintWriter(file)) {
+            fout.println(bot.getInput()); //结果放到input.txt中
+            fout.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
+        Integer direction = botInterface.get(); //返回一个数值
         System.out.println("move-direction: " + bot.getUserId() + " " + direction);
 
-        // 返回给websocket
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.add("user_id", bot.getUserId().toString());
         data.add("direction", direction.toString());
 
         restTemplate.postForObject(receiveBotMoveUrl, data, String.class);
+
     }
 }
