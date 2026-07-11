@@ -73,6 +73,12 @@ PY
   sleep 0.2
 done
 
+mkdir -p "$TEST_ROOT/no-lsof"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$TEST_ROOT/no-lsof/lsof"
+chmod +x "$TEST_ROOT/no-lsof/lsof"
+mysql_status=$(env PATH="$TEST_ROOT/no-lsof:$PATH" MYSQL_PORT="$port" RUNTIME_DIR="$TEST_ROOT/status-runtime" "$DEV_SCRIPT" status)
+printf '%s\n' "$mysql_status" | grep -q 'mysql.*running' || fail "status depends on lsof visibility instead of TCP reachability"
+
 mkdir -p "$TEST_ROOT/java/bin" "$TEST_ROOT/node"
 ln -s /usr/bin/true "$TEST_ROOT/java/bin/java"
 ln -s /usr/bin/true "$TEST_ROOT/node/node"

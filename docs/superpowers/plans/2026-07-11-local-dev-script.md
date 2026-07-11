@@ -6,7 +6,7 @@
 
 **架构：** 一个 Bash 脚本保存脚本自身启动进程的 PID 和独立日志，端口只用于就绪及冲突检测。单元级 Shell 测试通过环境变量注入临时目录和假服务，真实集成验证使用仓库现有 JDK 8、Maven、Node 20 和 MySQL。
 
-**技术栈：** Bash、macOS `lsof`、JDK 8、Maven、Node.js 20、npm、MySQL 8
+**技术栈：** Bash、macOS `nc`、JDK 8、Maven、Node.js 20、npm、MySQL 8
 
 ## 全局约束
 

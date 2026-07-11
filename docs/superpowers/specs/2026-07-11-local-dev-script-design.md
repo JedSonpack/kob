@@ -43,7 +43,7 @@
 
 ## 环境约束
 
-- macOS 和 zsh/bash 兼容的 POSIX 风格 Shell。
+- macOS 和 zsh/bash 兼容的 POSIX 风格 Shell，使用 `nc` 探测本机 TCP 端口。
 - JDK 8 默认路径：`/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home`。
 - Maven 默认使用 IntelliJ IDEA 内置版本：`/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin/mvn`。
 - Node.js 默认使用本机现有 Node 20：`$HOME/.nvm/versions/node/v20.20.2/bin`。

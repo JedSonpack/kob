@@ -72,7 +72,7 @@ log_file() {
 }
 
 port_open() {
-  lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1
+  nc -z 127.0.0.1 "$1" >/dev/null 2>&1
 }
 
 read_live_pid() {
@@ -112,7 +112,7 @@ check_start_dependencies() {
       failed=1
     fi
   done
-  command -v lsof >/dev/null 2>&1 || { error "required command not found: lsof"; failed=1; }
+  command -v nc >/dev/null 2>&1 || { error "required command not found: nc"; failed=1; }
   for name in "${SERVICE_NAMES[@]}"; do
     dir=$(service_dir "$name")
     if test ! -d "$dir"; then
