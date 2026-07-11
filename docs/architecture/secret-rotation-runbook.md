@@ -68,7 +68,14 @@
 - 代码回滚：`git revert <任务 1.1 提交>`。注意回滚后源码恢复旧泄漏密钥，**不应再以旧密钥运行**，需重新轮换。
 - 配置回滚：恢复上一版 `application-local.properties`（本地）或环境变量（生产）。
 
-## 7. 未验证项
+## 7. 验证与未验证项
 
-- 本任务环境无 MySQL，未验证真实 DB 连接与 `spring-boot:run` 全链路；需维护者按第 3 节自测。
+本地验证（2026-07-11，MySQL 8.0.26）：
+- DB 连接：backend HikariCP 用 `application-local.properties` 中的轮换密码连上 MySQL，查询触达 `kob.user`（空库报 `Table 'kob.user' doesn't exist`，属 schema 缺失，非配置问题）。
+- JWT 签发/校验：`JwtUtilTest` 通过；启动时 `validate()` 通过（密钥从配置注入，未配置则启动失败已验证机制有效）。
+- root 账号：已重置为新密码，插件 `mysql_native_password`。
+- 已建空 `kob` 库（utf8mb4），待补 `user`/`bot`/`record` 表 schema。
+
+仍未验证：
+- 完整登录链路（需 `user` 表与种子数据；审计列为独立 gap：仓库无建表脚本）。
 - 生产部署配置（Nginx/Docker/AcWing）未知（审计第 8 节待补），第 4 节为通用指引。
