@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：13 / 20 任务已完成**（master 本地领先 origin 3 个提交，4.3 未 push）
+**进度：14 / 20 任务已完成**（master 本地领先 origin 4 个提交，0.2 未 push）
 
 ## 任务状态
 
@@ -14,7 +14,7 @@
 | --- | --- | --- | --- | --- |
 | **阶段 0：测试护栏** | | | | |
 | 0.1 | 注册服务回归测试 | ✅ | `8764a68` | `RegisterServiceImplTest` 8 用例 |
-| 0.2 | 游戏规则测试 | ⏳ | - | 从 Game 抽出规则逻辑，下一个 |
+| 0.2 | 游戏规则测试 | ✅ | 本批 | GameRules 抽出蛇增长+碰撞规则，6 测试 |
 | 0.3 | `BotPool` 并发测试 | ✅ | `fadd34c` | 与 1.3 合并；队列排空+锁泄漏复现 |
 | **阶段 1：安全止血与正确性** | | | | |
 | 1.1 | 配置外置与密钥轮换 | ✅ | `7780a49` | DB/JWT 密钥外置；本地端到端验证通过 |
@@ -35,7 +35,7 @@
 | 4.2 | 抽取连接注册表 | ✅ | 本批 | OnlineUserRegistry 分离在线连接管理 |
 | 4.3 | 抽取游戏持久化与消息发布 | ✅ | 本批 | GameMessagePublisher 分离消息推送 |
 | **阶段 5：工具链** | | | | |
-| 5.1 | DTO 与统一校验 | ⬜ | - | 先迁一个端点 |
+| 5.1 | DTO 与统一校验 | ⏳ | - | 先迁一个端点，下一个 |
 | 5.2 | 前端统一 API Client | ⬜ | - | 先迁只读排行榜 |
 | 5.3 | 依赖和工具链升级 | 🚫 | - | 已决策暂缓（需完整测试套件先行） |
 
@@ -67,3 +67,4 @@
 - **批 9（2.3）**：进程级沙箱执行器。`SandboxMain`（子进程 + SecurityManager 禁网络/写/exec）+ `ProcessSandboxBotExecutor`（独立临时目录隔离 input.txt、超时强杀、功能开关）。JDK 8 端到端验证通过（修复 P0-1 最高安全风险 + 顺带 P1-2 input 隔离）。
 - **批 10（4.2）**：抽取连接注册表。`OnlineUserRegistry` 分离在线连接管理，WebSocketServer/Game/ReceiveBotMove 改用注册表。39 测试绿。
 - **批 11（4.3）**：抽取游戏消息发布。`GameMessagePublisher` 分离消息推送，Game.sendAllMessage 委托，不再直接访问连接表。backend 34 测试绿。
+- **批 12（0.2）**：游戏规则测试。`GameRules` 抽出蛇增长（checkTailIncreasing）与碰撞（checkValid）纯函数，Player/Game 委托；6 测试锁定规则。backend 40 测试绿。

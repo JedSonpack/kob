@@ -235,24 +235,7 @@ public class Game extends Thread {
 
 
     private boolean check_valid(List<Cell> cellsA, List<Cell> cellsB) {
-        int n = cellsA.size();
-        Cell cell = cellsA.get(n - 1); //取出最后一位(蛇头)
-        if (g[cell.x][cell.y] == 1) {
-            return false;
-        }
-
-        for (int i = 0; i < n - 1; i++) {
-            if (cellsA.get(i).x == cell.x && cellsA.get(i).y == cell.y) { //如果自己碰到自己就算输
-                return false;
-            }
-        }
-
-        for (int i = 0; i < n - 1; i++) {
-            if (cellsB.get(i).x == cell.x && cellsB.get(i).y == cell.y) { //如果主动碰到对手也算自己输
-                return false;
-            }
-        }
-        return true;
+        return GameRules.checkValid(cellsA, cellsB, g);  // 审计 0.2：委托纯函数
     }
 
     private void judge() {  // 判断两名玩家下一步操作是否合法

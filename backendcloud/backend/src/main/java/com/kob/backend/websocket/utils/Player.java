@@ -19,10 +19,7 @@ public class Player {
     private List<Integer> steps;
 
     private boolean check_tail_increasing(int step) { //检测当前回合蛇的长度是否增加
-        if (step <= 10) return true;
-        else {
-            return step % 3 == 1;
-        }
+        return GameRules.checkTailIncreasing(step);
     }
 
 
