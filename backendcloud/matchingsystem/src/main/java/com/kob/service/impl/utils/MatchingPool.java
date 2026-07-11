@@ -2,6 +2,7 @@ package com.kob.service.impl.utils;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -16,7 +17,10 @@ public class MatchingPool extends Thread {
     private static List<Player> players = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private static RestTemplate restTemplate;
-    private final static String startGameUrl = "http://127.0.0.1:3000/pk/start/game/";
+    private static String startGameUrl;  // 审计 4.1：外置到配置
+
+    @Value("${kob.service.backend.start-game-url:http://127.0.0.1:3000/pk/start/game/}")
+    public void setStartGameUrl(String startGameUrl) { MatchingPool.startGameUrl = startGameUrl; }
 
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {

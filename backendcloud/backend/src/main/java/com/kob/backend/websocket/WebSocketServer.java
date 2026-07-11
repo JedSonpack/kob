@@ -11,6 +11,7 @@ import com.kob.backend.websocket.utils.Game;
 import com.kob.backend.websocket.utils.JwtAuthentication;
 import com.kob.backend.websocket.utils.PkValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -43,9 +44,17 @@ public class WebSocketServer {
     // 存储游戏对象
     public Game game = null;
 
-    //路径
-    private final static String addPlayerUrl = "http://127.0.0.1:3001/player/add/";
-    private final static String removePlayerurl = "http://127.0.0.1:3001/player/remove/";
+    // 路径（审计 4.1：外置到配置，默认本地地址，可由 kob.service.* 覆盖）
+    private static String addPlayerUrl;
+    private static String removePlayerurl;
+    public static String addBotUrl;  // Game 非 Spring bean，借此注入
+
+    @Value("${kob.service.matching.add-player-url:http://127.0.0.1:3001/player/add/}")
+    public void setAddPlayerUrl(String addPlayerUrl) { WebSocketServer.addPlayerUrl = addPlayerUrl; }
+    @Value("${kob.service.matching.remove-player-url:http://127.0.0.1:3001/player/remove/}")
+    public void setRemovePlayerurl(String removePlayerurl) { WebSocketServer.removePlayerurl = removePlayerurl; }
+    @Value("${kob.service.botrunning.add-bot-url:http://127.0.0.1:3002/bot/add/}")
+    public void setAddBotUrl(String addBotUrl) { WebSocketServer.addBotUrl = addBotUrl; }
 
 
     public static RecordMapper recordMapper;

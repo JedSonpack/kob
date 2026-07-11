@@ -3,6 +3,7 @@ package com.kob.service.impl.utils;
 
 import org.joor.Reflect;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -18,7 +19,10 @@ import java.util.function.Supplier;
 public class Consumer extends Thread {
     private Bot bot;
     private static RestTemplate restTemplate;
-    private final static String receiveBotMoveUrl = "http://127.0.0.1:3000/pk/receive/bot/move/";
+    private static String receiveBotMoveUrl;  // 审计 4.1：外置到配置
+
+    @Value("${kob.service.backend.receive-bot-move-url:http://127.0.0.1:3000/pk/receive/bot/move/}")
+    public void setReceiveBotMoveUrl(String receiveBotMoveUrl) { Consumer.receiveBotMoveUrl = receiveBotMoveUrl; }
 
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {

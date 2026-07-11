@@ -28,7 +28,6 @@ public class Game extends Thread {
     private ReentrantLock lock = new ReentrantLock();
     private String status = "playing";  // playing -> finished
     private String loser = "";  // all: 平局，A: A输，B: B输
-    private final static String addBotUrl = "http://127.0.0.1:3002/bot/add/";
 
     public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Bot botA, Integer idB, Bot botB) {
         this.rows = rows;
@@ -173,7 +172,7 @@ public class Game extends Thread {
 
         data.add("input", getInput(player));
 
-        WebSocketServer.restTemplate.postForObject(addBotUrl, data, String.class);
+        WebSocketServer.restTemplate.postForObject(WebSocketServer.addBotUrl, data, String.class);
 
     }
 
