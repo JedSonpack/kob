@@ -48,7 +48,7 @@
 import ContentField from "../../components/ContentField.vue";
 import { useStore } from "vuex";
 import { ref } from "vue";
-import $ from "jquery";
+import { api } from "../../assets/scripts/apiClient";
 export default {
   components: {
     ContentField,
@@ -86,25 +86,18 @@ export default {
 
     const pull_page = (page) => {
       current_page = page;
-      $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/ranklist/getlist/",
-        data: {
-          page,
-        },
-        type: "get",
-        headers: {
-          Authorization: "Bearer " + store.state.user.token,
-        },
-        success(resp) {
+      api.get(  // 审计 5.2：统一 API Client（URL/认证头/错误集中）
+        "/api/ranklist/getlist/",
+        { page },
+        (resp) => {
           users.value = resp.users;
-          console.log(users.value);
           total_users = resp.users_count;
           udpate_pages();
         },
-        error(resp) {
+        (resp) => {
           console.log(resp);
-        },
-      });
+        }
+      );
     };
 
     pull_page(current_page);
