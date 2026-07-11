@@ -1,5 +1,8 @@
 .omx/
 .idea
-
+.codex
 # 本地密钥配置（含真实 DB 密码与 JWT 密钥，禁止提交）
 **/application-local.properties
+
+AGENTS.md
+CLAUDE.md
