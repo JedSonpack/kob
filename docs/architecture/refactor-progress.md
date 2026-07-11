@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：10 / 20 任务已完成**（master 本地领先 origin 10 个提交，未 push）
+**进度：11 / 20 任务已完成**（master 本地领先 origin 1 个提交，2.3 未 push）
 
 ## 任务状态
 
@@ -24,7 +24,7 @@
 | **阶段 2：Bot 协议与执行** | | | | |
 | 2.1 | Bot 请求关联协议 | ✅ | 本批 | gameId/roundId 防串局 |
 | 2.2 | Bot 执行器接口 | ✅ | 本批 | 抽取 BotExecutor，保留 jOOR 实现 |
-| 2.3 | 独立沙箱执行器 | ⏳ | - | 进程级隔离（已决策），下一个 |
+| 2.3 | 独立沙箱执行器 | ✅ | 本批 | 进程级隔离+SecurityManager+超时+input 隔离 |
 | 2.4 | 游戏结果事务 | ✅ | 本批 | 抽取 GameResultService（@Transactional） |
 | **阶段 3：前端正确性** | | | | |
 | 3.1 | 前端游戏对象销毁 | ⬜ | - | 修 `splice` 与卸载泄漏 |
@@ -37,7 +37,7 @@
 | **阶段 5：工具链** | | | | |
 | 5.1 | DTO 与统一校验 | ⬜ | - | 先迁一个端点 |
 | 5.2 | 前端统一 API Client | ⬜ | - | 先迁只读排行榜 |
-| 5.3 | 依赖和工具链升级 | ⬜ | - | 最后处理 |
+| 5.3 | 依赖和工具链升级 | 🚫 | - | 已决策暂缓（需完整测试套件先行） |
 
 ## 环境与运行状态（2026-07-11 落实）
 
@@ -45,6 +45,8 @@
 - **本地密钥**：`backendcloud/backend/src/main/resources/application-local.properties`（gitignore，未入库）含轮换后的 DB 密码与 JWT 密钥。
 - **DB 连接**：已验证 backend HikariCP 用外置密码连库成功（查询触达 `kob.user`）。
 - **`kob` 库**：已建空库（utf8mb4）；**`user`/`bot`/`record` 表未建**。
+- **JDK**：项目为 Java 8；本机全局 `settings.xml` 的 `jdk-17` profile 已去掉 `activeByDefault`（仅 JDK 17 时激活），JDK 8 下 pom 的 8 生效。
+- **Bot 沙箱（2.3）**：需 botrunningsystem 跑 JDK 8（jOOR 兼容）；`kob.bot.executor=sandbox` 启用，子进程用 `kob.bot.sandbox.java-home`（默认 JDK 8 路径）、超时 `kob.bot.sandbox.timeout-ms`。
 
 ## 阻塞与 gap（审计已列，非本批任务）
 
@@ -62,3 +64,4 @@
 - **批 6（2.4）**：游戏结果事务。抽取 `GameResultService`（@Transactional），原子保存双方积分与战绩；Game.saveToDatabase 委托。27 测试绿（事务回滚集成测试需 schema，未验证）。
 - **批 7（2.1）**：Bot 请求关联协议。Game 增加 gameId/currentRoundId，bot 执行链路（backend↔botrunning）贯穿 gameId/roundId，回调校验匹配才应用（防串局/迟到/乱序）。31 测试绿。
 - **批 8（2.2）**：Bot 执行器接口。抽取 `BotExecutor` + `JooprBotExecutor`（沿用 jOOR），Consumer 委托执行器。32 测试绿（jOOR 编译路径在 Java 17 测试环境不兼容，仅测 addUid 纯逻辑）。
+- **批 9（2.3）**：进程级沙箱执行器。`SandboxMain`（子进程 + SecurityManager 禁网络/写/exec）+ `ProcessSandboxBotExecutor`（独立临时目录隔离 input.txt、超时强杀、功能开关）。JDK 8 端到端验证通过（修复 P0-1 最高安全风险 + 顺带 P1-2 input 隔离）。

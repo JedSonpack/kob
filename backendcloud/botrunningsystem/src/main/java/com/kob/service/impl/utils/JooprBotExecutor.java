@@ -1,6 +1,7 @@
 package com.kob.service.impl.utils;
 
 import org.joor.Reflect;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
  * 注意：在主 JVM 内执行用户代码存在安全风险，仅作为默认/回退实现；沙箱实现见 2.3。
  */
 @Component
+@ConditionalOnProperty(name = "kob.bot.executor", havingValue = "joor", matchIfMissing = true)
 public class JooprBotExecutor implements BotExecutor {
 
     @Override
