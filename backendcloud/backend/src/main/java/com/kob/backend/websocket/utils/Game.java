@@ -3,8 +3,6 @@ package com.kob.backend.websocket.utils;
 import com.alibaba.fastjson.JSONObject;
 
 import com.kob.backend.pojo.Bot;
-import com.kob.backend.pojo.Record;
-import com.kob.backend.pojo.User;
 import com.kob.backend.websocket.WebSocketServer;
 import com.kob.backend.websocket.utils.Player;
 import org.springframework.util.LinkedMultiValueMap;
@@ -253,43 +251,15 @@ public class Game extends Thread {
     }
 
 
-    private void updateUserRating(Player player, Integer rating) {
-        User user = WebSocketServer.userMapper.selectById(player.getId());
-        user.setRating(rating);
-        WebSocketServer.userMapper.updateById(user);
-    }
-
     private void saveToDatabase() {
-        Integer ratingA = WebSocketServer.userMapper.selectById(playerA.getId()).getRating();
-        Integer ratingB = WebSocketServer.userMapper.selectById(playerB.getId()).getRating();
-
-        if ("A".equals(loser)) { //赢了加五分，输了扣两分
-            ratingA -= 2;
-            ratingB += 5;
-        } else if ("B".equals(loser)) {
-            ratingA += 5;
-            ratingB -= 2;
-        }
-
-        updateUserRating(playerA, ratingA);
-        updateUserRating(playerB, ratingB);
-
-        Record record = new Record(
-                null,
-                playerA.getId(),
-                playerA.getSx(),
-                playerA.getSy(),
-                playerB.getId(),
-                playerB.getSx(),
-                playerB.getSy(),
-                playerA.getStepsString(),
-                playerB.getStepsString(),
-                getMapString(),
-                loser,
-                new Date()
+        // 审计 2.4：委托事务化持久化服务，原子保存双方积分与战绩
+        WebSocketServer.gameResultService.saveResult(
+                playerA.getId(), playerB.getId(),
+                playerA.getSx(), playerA.getSy(),
+                playerB.getSx(), playerB.getSy(),
+                playerA.getStepsString(), playerB.getStepsString(),
+                getMapString(), loser, new Date()
         );
-
-        WebSocketServer.recordMapper.insert(record);
     }
 
 

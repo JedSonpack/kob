@@ -7,6 +7,7 @@ import com.kob.backend.mapper.UserMapper;
 import com.kob.backend.pojo.Bot;
 import com.kob.backend.pojo.Record;
 import com.kob.backend.pojo.User;
+import com.kob.backend.service.pk.GameResultService;
 import com.kob.backend.websocket.utils.Game;
 import com.kob.backend.websocket.utils.JwtAuthentication;
 import com.kob.backend.websocket.utils.PkValidation;
@@ -60,6 +61,7 @@ public class WebSocketServer {
     public static RecordMapper recordMapper;
     public static RestTemplate restTemplate;
     private static BotMapper botMapper;
+    public static GameResultService gameResultService;
 
     @Autowired
     public void setBotMapper(BotMapper botMapper) {
@@ -80,6 +82,11 @@ public class WebSocketServer {
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         WebSocketServer.restTemplate = restTemplate;
+    }
+
+    @Autowired
+    public void setGameResultService(GameResultService gameResultService) {
+        WebSocketServer.gameResultService = gameResultService;
     }
 
     @OnOpen
