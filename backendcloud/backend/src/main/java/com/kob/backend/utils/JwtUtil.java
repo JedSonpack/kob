@@ -4,21 +4,45 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
-//jwt工具类，用来创建、解析jwt token
+// jwt工具类，用来创建、解析jwt token。
+// 密钥与有效期通过配置注入（kob.jwt.secret / kob.jwt.ttl-millis），不再硬编码。
+// TODO 后续可重构为实例方法 + 构造器注入，去掉静态 setter。
 
 
 @Component
 public class JwtUtil {
-    public static final long JWT_TTL = 60 * 60 * 1000L * 24 * 14;  // 有效期14天
-    public static final String JWT_KEY = "SDFGjhdsfalshdfHFdsjkdsfds121232131afasdfac"; //随机的字符串，保密
+
+    // 通过 @Value 静态 setter 注入；调用方仍用静态方法，零改动。
+    private static String jwtKey;
+    private static long jwtTtlMillis;
+
+    @Value("${kob.jwt.secret:}")
+    public void setJwtKey(String jwtKey) {
+        JwtUtil.jwtKey = jwtKey;
+    }
+
+    @Value("${kob.jwt.ttl-millis:1209600000}")  // 默认 14 天
+    public void setJwtTtlMillis(long jwtTtlMillis) {
+        JwtUtil.jwtTtlMillis = jwtTtlMillis;
+    }
+
+    @PostConstruct
+    public void validate() {
+        if (jwtKey == null || jwtKey.trim().isEmpty()) {
+            throw new IllegalStateException(
+                    "kob.jwt.secret 未配置：请在 application-local.properties 或环境变量 KOB_JWT_SECRET 中提供 JWT 密钥");
+        }
+    }
 
     public static String getUUID() {
         return UUID.randomUUID().toString().replaceAll("-", "");
@@ -35,7 +59,7 @@ public class JwtUtil {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
         if (ttlMillis == null) {
-            ttlMillis = JwtUtil.JWT_TTL;
+            ttlMillis = jwtTtlMillis;
         }
 
         long expMillis = nowMillis + ttlMillis;
@@ -50,7 +74,7 @@ public class JwtUtil {
     }
 
     public static SecretKey generalKey() {
-        byte[] encodeKey = Base64.getDecoder().decode(JwtUtil.JWT_KEY);
+        byte[] encodeKey = Base64.getDecoder().decode(jwtKey);
         return new SecretKeySpec(encodeKey, 0, encodeKey.length, "HmacSHA256");
     }
 
