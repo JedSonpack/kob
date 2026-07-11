@@ -48,7 +48,7 @@
 - Maven 默认使用 IntelliJ IDEA 内置版本：`/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin/mvn`。
 - Node.js 默认使用本机现有 Node 20：`$HOME/.nvm/versions/node/v20.20.2/bin`。
 - MySQL 启动脚本：`/usr/local/mysql/support-files/mysql.server`。
-- 以上路径允许分别通过 `JAVA_HOME`、`MAVEN_BIN`、`NODE_BIN_DIR`、`MYSQL_SERVER` 环境变量覆盖。
+- 以上路径允许分别通过 `KOB_JAVA_HOME`、`MAVEN_BIN`、`NODE_BIN_DIR`、`MYSQL_SERVER` 环境变量覆盖。脚本不继承全局 `JAVA_HOME`，避免本机 JDK 17 意外覆盖项目要求的 JDK 8。
 - 脚本不读取、不输出也不复制数据库密码；后端继续使用已忽略的 `application-local.properties`。
 
 ## 启动流程

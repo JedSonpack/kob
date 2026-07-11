@@ -9,3 +9,5 @@ CLAUDE.md
 legacy-project-audit.md
 
 .DS_Store
+
+.runtime/
