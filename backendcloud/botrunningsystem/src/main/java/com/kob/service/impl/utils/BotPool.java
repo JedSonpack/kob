@@ -21,7 +21,7 @@ public class BotPool extends Thread {
         }
     }
 
-    private void consume(Bot bot) {
+    protected void consume(Bot bot) {
         Consumer consumer = new Consumer();
         consumer.startTimeout(2000, bot);
     }
@@ -29,20 +29,22 @@ public class BotPool extends Thread {
     @Override
     public void run() {
         while (true) {
+            Bot bot;
             lock.lock();
-            if (bots.isEmpty()) {
-                try {
-                    condition.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    lock.unlock();
-                    break;
+            try {
+                while (bots.isEmpty()) {
+                    try {
+                        condition.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return;  // 退出线程
+                    }
                 }
-            } else {
-                Bot bot = bots.remove();
-                lock.unlock();
-                consume(bot);  // 比较耗时，可能会执行几秒钟
+                bot = bots.remove();
+            } finally {
+                lock.unlock();  // 成对释放，避免锁计数泄漏（审计 1.3）
             }
+            consume(bot);  // 锁外执行，不阻塞生产者
         }
     }
 }
