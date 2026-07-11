@@ -23,8 +23,6 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 @ServerEndpoint("/websocket/{token}")  // 注意不要以'/'结尾
@@ -33,8 +31,8 @@ public class WebSocketServer {
     // 后端向前端发送消息
     private Session session = null;
 
-    // 在本类中维护一个静态表，将用户id和websocket对应起来，不需要初始化实例就可以有这个表  对所有实例都可见且只能在本类中使用
-    final public static ConcurrentHashMap<Integer, WebSocketServer> users = new ConcurrentHashMap<>();
+    // 审计 4.2：在线连接管理抽取到 OnlineUserRegistry
+    public static OnlineUserRegistry onlineUserRegistry;
 
     // 这个连接用的是谁(用户)
     private User user;
@@ -89,6 +87,11 @@ public class WebSocketServer {
         WebSocketServer.gameResultService = gameResultService;
     }
 
+    @Autowired
+    public void setOnlineUserRegistry(OnlineUserRegistry onlineUserRegistry) {
+        WebSocketServer.onlineUserRegistry = onlineUserRegistry;
+    }
+
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) throws IOException {
         // 建立连接
@@ -101,13 +104,13 @@ public class WebSocketServer {
         this.user = userMapper.selectById(userId);
 
         if (this.user != null) {
-            users.put(userId, this);
+            onlineUserRegistry.register(userId, this);
         } else {
             this.session.close();
         }
 
 
-        System.out.println(users);
+        System.out.println(onlineUserRegistry);
 
     }
 
@@ -115,7 +118,7 @@ public class WebSocketServer {
     public void onClose() {
         System.out.println("disconnected!");
         if (this.user != null) {
-            users.remove(this.user.getId());
+            onlineUserRegistry.remove(this.user.getId());
         }
     }
 
@@ -137,10 +140,10 @@ public class WebSocketServer {
                 botB
         );
         game.createMap();
-        if (users.get(a.getId()) != null)
-            users.get(a.getId()).game = game;
-        if (users.get(b.getId()) != null)
-            users.get(b.getId()).game = game;
+        if (onlineUserRegistry.get(a.getId()) != null)
+            onlineUserRegistry.get(a.getId()).game = game;
+        if (onlineUserRegistry.get(b.getId()) != null)
+            onlineUserRegistry.get(b.getId()).game = game;
 
         game.start();
 
@@ -158,16 +161,16 @@ public class WebSocketServer {
         respA.put("opponent_username", b.getUsername());
         respA.put("opponent_photo", b.getPhoto());
         respA.put("game", respGame);
-        if (users.get(a.getId()) != null)
-            users.get(a.getId()).sendMessage(respA.toJSONString());
+        if (onlineUserRegistry.get(a.getId()) != null)
+            onlineUserRegistry.get(a.getId()).sendMessage(respA.toJSONString());
 
         JSONObject respB = new JSONObject();
         respB.put("event", "start-matching");
         respB.put("opponent_username", a.getUsername());
         respB.put("opponent_photo", a.getPhoto());
         respB.put("game", respGame);
-        if (users.get(b.getId()) != null)
-            users.get(b.getId()).sendMessage(respB.toJSONString());
+        if (onlineUserRegistry.get(b.getId()) != null)
+            onlineUserRegistry.get(b.getId()).sendMessage(respB.toJSONString());
 
 
     }

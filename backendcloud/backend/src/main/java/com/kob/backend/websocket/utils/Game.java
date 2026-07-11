@@ -300,10 +300,10 @@ public class Game extends Thread {
 
     private void sendAllMessage(String message) {
 
-        if (WebSocketServer.users.get(playerA.getId()) != null)
-            WebSocketServer.users.get(playerA.getId()).sendMessage(message);
-        if (WebSocketServer.users.get(playerB.getId()) != null)
-            WebSocketServer.users.get(playerB.getId()).sendMessage(message);
+        if (WebSocketServer.onlineUserRegistry.get(playerA.getId()) != null)
+            WebSocketServer.onlineUserRegistry.get(playerA.getId()).sendMessage(message);
+        if (WebSocketServer.onlineUserRegistry.get(playerB.getId()) != null)
+            WebSocketServer.onlineUserRegistry.get(playerB.getId()).sendMessage(message);
     }
 
     private void sendMove() {  // 向两个Client传递移动信息

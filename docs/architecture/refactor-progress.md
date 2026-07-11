@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：11 / 20 任务已完成**（master 本地领先 origin 1 个提交，2.3 未 push）
+**进度：12 / 20 任务已完成**（master 本地领先 origin 2 个提交，4.2 未 push）
 
 ## 任务状态
 
@@ -32,8 +32,8 @@
 | 3.3 | WebSocket 会话状态机 | ⬜ | - | 去固定延时与竞态 |
 | **阶段 4：边界拆分** | | | | |
 | 4.1 | 外置服务 URL 和超时 | ✅ | 本批 | RestTemplate 加超时 + 5 个 URL 外置 |
-| 4.2 | 抽取连接注册表 | ⏳ | - | 从 WebSocketServer 分离，下一个 |
-| 4.3 | 抽取游戏持久化与消息发布 | ⬜ | - | 降低 `Game` 依赖 |
+| 4.2 | 抽取连接注册表 | ✅ | 本批 | OnlineUserRegistry 分离在线连接管理 |
+| 4.3 | 抽取游戏持久化与消息发布 | ⏳ | - | 降低 Game 依赖，下一个 |
 | **阶段 5：工具链** | | | | |
 | 5.1 | DTO 与统一校验 | ⬜ | - | 先迁一个端点 |
 | 5.2 | 前端统一 API Client | ⬜ | - | 先迁只读排行榜 |
@@ -65,3 +65,4 @@
 - **批 7（2.1）**：Bot 请求关联协议。Game 增加 gameId/currentRoundId，bot 执行链路（backend↔botrunning）贯穿 gameId/roundId，回调校验匹配才应用（防串局/迟到/乱序）。31 测试绿。
 - **批 8（2.2）**：Bot 执行器接口。抽取 `BotExecutor` + `JooprBotExecutor`（沿用 jOOR），Consumer 委托执行器。32 测试绿（jOOR 编译路径在 Java 17 测试环境不兼容，仅测 addUid 纯逻辑）。
 - **批 9（2.3）**：进程级沙箱执行器。`SandboxMain`（子进程 + SecurityManager 禁网络/写/exec）+ `ProcessSandboxBotExecutor`（独立临时目录隔离 input.txt、超时强杀、功能开关）。JDK 8 端到端验证通过（修复 P0-1 最高安全风险 + 顺带 P1-2 input 隔离）。
+- **批 10（4.2）**：抽取连接注册表。`OnlineUserRegistry` 分离在线连接管理，WebSocketServer/Game/ReceiveBotMove 改用注册表。39 测试绿。
