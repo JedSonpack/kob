@@ -49,6 +49,7 @@
 import { ref } from "vue";
 import { useStore } from "vuex";
 import $ from "jquery";
+import { safeSend } from "../assets/scripts/pkSocket";
 
 export default {
   setup() {
@@ -60,19 +61,15 @@ export default {
     const click_match_btn = () => {
       if (match_btn_info.value === "开始匹配") {
         match_btn_info.value = "取消";
-        store.state.pk.socket.send(
-          JSON.stringify({
-            event: "start-matching",
-            bot_id: select_bot.value,
-          })
-        );
+        safeSend(store.state.pk.socket, JSON.stringify({  // 审计 3.3：安全发送，未连接不抛异常
+          event: "start-matching",
+          bot_id: select_bot.value,
+        }));
       } else {
         match_btn_info.value = "开始匹配";
-        store.state.pk.socket.send(
-          JSON.stringify({
-            event: "stop-matching",
-          })
-        );
+        safeSend(store.state.pk.socket, JSON.stringify({
+          event: "stop-matching",
+        }));
       }
     };
 

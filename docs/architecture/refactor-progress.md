@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：17 / 20 任务已完成**（master 本地领先 origin 7 个提交，3.2 未 push）
+**进度：18 / 20 任务已完成**（master 本地领先 origin 8 个提交，3.3 未 push）
 
 ## 任务状态
 
@@ -29,14 +29,14 @@
 | **阶段 3：前端正确性** | | | | |
 | 3.1 | 前端游戏对象销毁 | ✅ | 本批 | splice 修复 + onUnmounted + Vitest |
 | 3.2 | 录像详情恢复 | ✅ | 本批 | 后端按 ID 取录像 + 前端挂载拉取 |
-| 3.3 | WebSocket 会话状态机 | ⏳ | - | 去固定延时与竞态，下一个 |
+| 3.3 | WebSocket 会话状态机 | ✅ | 本批 | safeSend + 去延时 + gameObject 防御 |
 | **阶段 4：边界拆分** | | | | |
 | 4.1 | 外置服务 URL 和超时 | ✅ | 本批 | RestTemplate 加超时 + 5 个 URL 外置 |
 | 4.2 | 抽取连接注册表 | ✅ | 本批 | OnlineUserRegistry 分离在线连接管理 |
 | 4.3 | 抽取游戏持久化与消息发布 | ✅ | 本批 | GameMessagePublisher 分离消息推送 |
 | **阶段 5：工具链** | | | | |
 | 5.1 | DTO 与统一校验 | ✅ | 本批 | 排行榜响应 DTO + @Min 校验 + 全局异常 |
-| 5.2 | 前端统一 API Client | ⬜ | - | 先迁只读排行榜 |
+| 5.2 | 前端统一 API Client | ⏳ | - | 先迁只读排行榜，下一个 |
 | 5.3 | 依赖和工具链升级 | 🚫 | - | 已决策暂缓（需完整测试套件先行） |
 
 ## 环境与运行状态（2026-07-11 落实）
@@ -71,3 +71,4 @@
 - **批 13（5.1）**：DTO 与统一校验。排行榜改 `UserListItemDto` 响应 DTO（不再 setPassword 规避泄漏）+ `@Min(1)` 校验 + `GlobalExceptionHandler` 统一错误。backend 41 测试绿。后端重构全部完成。
 - **批 14（3.1 + Vitest）**：前端测试框架（Vitest + jsdom + @vitejs/plugin-vue）+ 游戏对象销毁修复。`AcGameObject.destroy` 的 `splice(i)` 改 `splice(idx,1)`（原会删其后全部）；GameMap 新增 `on_destroy` 清理 keydown 监听与回放定时器；GameMap.vue `onUnmounted` 销毁游戏对象。2 前端测试绿。
 - **批 15（3.2）**：录像详情恢复。后端新增 `/api/record/get/` 按 ID 取单条录像；前端 `recordHelper` 共享写 Vuex 逻辑，RecordContentView 挂载时按 URL recordId 拉取（支持直达/刷新），RecordindexView 复用 helper。后端 2 + 前端 3 测试绿。
+- **批 16（3.3）**：WebSocket 会话状态机。`pkSocket.safeSend` 包装发送（未连接不抛异常）；PkindexView 去掉固定 100ms 延时（立即切 playing）、move/result 防御 gameObject 未就绪；MatchGround 用 safeSend。前端 6 测试绿。

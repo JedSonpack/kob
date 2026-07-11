@@ -64,19 +64,17 @@ export default {
             username: data.opponent_username,
             photo: data.opponent_photo,
           });
-          setTimeout(() => {
-            store.commit("updateStatus", "playing");
-          }, 100);
           store.commit("updateGame", data.game);
+          store.commit("updateStatus", "playing");  // 审计 3.3：去掉固定 100ms 延时，立即切对战
         } else if (data.event === "move") {
-          console.log(data);
           const game = store.state.pk.gameObject;
+          if (!game) return;  // 审计 3.3：gameObject 未就绪则忽略，避免竞态崩溃
           const [snake0, snake1] = game.snakes;
           snake0.set_direction(data.a_direction);
           snake1.set_direction(data.b_direction);
         } else if (data.event === "result") {
-          console.log(data);
           const game = store.state.pk.gameObject;
+          if (!game) return;  // 审计 3.3：gameObject 未就绪则忽略
           const [snake0, snake1] = game.snakes;
 
           if (data.loser === "all" || data.loser === "A") {
