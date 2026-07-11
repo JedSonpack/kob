@@ -63,6 +63,7 @@ import { useStore } from "vuex";
 import { ref } from "vue";
 import $ from "jquery";
 import router from "../../router/index";
+import { populateRecordFromItem } from "../../assets/scripts/recordHelper";
 
 export default {
   components: {
@@ -123,37 +124,10 @@ export default {
 
     pull_page(current_page);
 
-    const stringTo2D = (map) => {
-      let g = [];
-      for (let i = 0, k = 0; i < 13; i++) {
-        let line = [];
-        for (let j = 0; j < 14; j++, k++) {
-          if (map[k] === "0") line.push(0);
-          else line.push(1);
-        }
-        g.push(line);
-      }
-      return g;
-    };
-
     const open_record_content = (recordId) => {
       for (const record of records.value) {
         if (record.record.id === recordId) {
-          store.commit("updateIsRecord", true);
-          store.commit("updateGame", {
-            map: stringTo2D(record.record.map),
-            a_id: record.record.aid,
-            a_sx: record.record.asx,
-            a_sy: record.record.asy,
-            b_id: record.record.bid,
-            b_sx: record.record.bsx,
-            b_sy: record.record.bsy,
-          });
-          store.commit("updateSteps", {
-            a_steps: record.record.asteps,
-            b_steps: record.record.bsteps,
-          });
-          store.commit("updateRecordLoser", record.record.loser);
+          populateRecordFromItem(store, record);  // 审计 3.2：复用共享 helper
           router.push({
             name: "record_content",
             params: {
