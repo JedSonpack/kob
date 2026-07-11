@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：15 / 20 任务已完成**（master 本地领先 origin 5 个提交；后端重构全部完成，剩余前端 3.x/5.2 + 5.3 暂缓）
+**进度：16 / 20 任务已完成**（master 本地领先 origin 6 个提交，3.1 未 push）
 
 ## 任务状态
 
@@ -27,8 +27,8 @@
 | 2.3 | 独立沙箱执行器 | ✅ | 本批 | 进程级隔离+SecurityManager+超时+input 隔离 |
 | 2.4 | 游戏结果事务 | ✅ | 本批 | 抽取 GameResultService（@Transactional） |
 | **阶段 3：前端正确性** | | | | |
-| 3.1 | 前端游戏对象销毁 | ⏳ | - | 需先补 Vitest，下一个 |
-| 3.2 | 录像详情恢复 | ⬜ | - | 支持直达/刷新 |
+| 3.1 | 前端游戏对象销毁 | ✅ | 本批 | splice 修复 + onUnmounted + Vitest |
+| 3.2 | 录像详情恢复 | ⏳ | - | 支持直达/刷新，下一个 |
 | 3.3 | WebSocket 会话状态机 | ⬜ | - | 去固定延时与竞态 |
 | **阶段 4：边界拆分** | | | | |
 | 4.1 | 外置服务 URL 和超时 | ✅ | 本批 | RestTemplate 加超时 + 5 个 URL 外置 |
@@ -69,3 +69,4 @@
 - **批 11（4.3）**：抽取游戏消息发布。`GameMessagePublisher` 分离消息推送，Game.sendAllMessage 委托，不再直接访问连接表。backend 34 测试绿。
 - **批 12（0.2）**：游戏规则测试。`GameRules` 抽出蛇增长（checkTailIncreasing）与碰撞（checkValid）纯函数，Player/Game 委托；6 测试锁定规则。backend 40 测试绿。
 - **批 13（5.1）**：DTO 与统一校验。排行榜改 `UserListItemDto` 响应 DTO（不再 setPassword 规避泄漏）+ `@Min(1)` 校验 + `GlobalExceptionHandler` 统一错误。backend 41 测试绿。后端重构全部完成。
+- **批 14（3.1 + Vitest）**：前端测试框架（Vitest + jsdom + @vitejs/plugin-vue）+ 游戏对象销毁修复。`AcGameObject.destroy` 的 `splice(i)` 改 `splice(idx,1)`（原会删其后全部）；GameMap 新增 `on_destroy` 清理 keydown 监听与回放定时器；GameMap.vue `onUnmounted` 销毁游戏对象。2 前端测试绿。

@@ -1,4 +1,4 @@
-const AC_GAME_OBJECTS = []; // 存储游戏对象
+export const AC_GAME_OBJECTS = []; // 存储游戏对象（审计 3.1：导出便于测试）
 
 export class AcGameObject {  //基类
     constructor() {
@@ -21,12 +21,9 @@ export class AcGameObject {  //基类
     destroy() {
         this.on_destroy();
 
-        for (let i in AC_GAME_OBJECTS) {
-            const obj = AC_GAME_OBJECTS[i];
-            if (obj === this) {  //删除这个游戏对象
-                AC_GAME_OBJECTS.splice(i);
-                break;
-            }
+        const idx = AC_GAME_OBJECTS.indexOf(this);
+        if (idx !== -1) {
+            AC_GAME_OBJECTS.splice(idx, 1);  // 审计 3.1：仅删自身；原 splice(i) 会删除其后全部对象
         }
     }
 }

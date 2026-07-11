@@ -7,7 +7,7 @@
 
 <script>
 import { GameMap } from "@/assets/scripts/GameMap";
-import { ref, onMounted } from "vue"; //挂载结束后onMounted
+import { ref, onMounted, onUnmounted } from "vue"; //挂载结束后onMounted
 import { useStore } from "vuex";
 
 export default {
@@ -20,6 +20,13 @@ export default {
         "updateGameObject",
         new GameMap(canvas.value.getContext("2d"), parent.value, store)
       );
+    });
+
+    onUnmounted(() => {  // 审计 3.1：卸载时销毁游戏对象，清理 rAF/监听/定时器
+      const gameObject = store.state.pk.gameObject;
+      if (gameObject) {
+        gameObject.destroy();
+      }
     });
 
     return {

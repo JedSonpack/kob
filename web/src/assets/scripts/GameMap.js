@@ -45,7 +45,7 @@ export class GameMap extends AcGameObject {
       const b_steps = this.store.state.record.b_steps;
       const loser = this.store.state.record.record_loser;
       const [snake0, snake1] = this.snakes;
-      const interval_id = setInterval(() => {
+      this.replay_interval_id = setInterval(() => {  // 审计 3.1：存引用，便于卸载清理
         if (k >= a_steps.length - 1) {
           if (loser === "all" || loser === "A") {
             snake0.status = "die";
@@ -53,7 +53,7 @@ export class GameMap extends AcGameObject {
           if (loser === "all" || loser === "B") {
             snake1.status = "die";
           }
-          clearInterval(interval_id);
+          clearInterval(this.replay_interval_id);
         } else {
           snake0.set_direction(parseInt(a_steps[k]));
           snake1.set_direction(parseInt(b_steps[k]));
@@ -63,7 +63,7 @@ export class GameMap extends AcGameObject {
     } else {
       this.ctx.canvas.focus();
 
-      this.ctx.canvas.addEventListener("keydown", (e) => {
+      this.keydown_handler = (e) => {  // 审计 3.1：存引用，便于卸载移除
         let d = -1;
         if (e.key === "w") d = 0;
         else if (e.key === "d") d = 1;
@@ -78,7 +78,19 @@ export class GameMap extends AcGameObject {
             })
           );
         }
-      });
+      };
+      this.ctx.canvas.addEventListener("keydown", this.keydown_handler);
+    }
+  }
+
+  on_destroy() {  // 审计 3.1：卸载时清理定时器与监听，避免泄漏
+    if (this.replay_interval_id) {
+      clearInterval(this.replay_interval_id);
+      this.replay_interval_id = null;
+    }
+    if (this.keydown_handler && this.ctx && this.ctx.canvas) {
+      this.ctx.canvas.removeEventListener("keydown", this.keydown_handler);
+      this.keydown_handler = null;
     }
   }
 
