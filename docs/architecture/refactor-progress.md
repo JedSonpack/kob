@@ -44,13 +44,12 @@
 - **MySQL**：本机 8.0.26（`/usr/local/mysql`）已启动；root 密码已轮换为新值、插件 `mysql_native_password`。
 - **本地密钥**：`backendcloud/backend/src/main/resources/application-local.properties`（gitignore，未入库）含轮换后的 DB 密码与 JWT 密钥。
 - **DB 连接**：已验证 backend HikariCP 用外置密码连库成功（查询触达 `kob.user`）。
-- **`kob` 库**：已建空库（utf8mb4）；**`user`/`bot`/`record` 表未建**。
+- **`kob` 库**：已通过 `backendcloud/database/schema.sql` 创建 `user`、`bot`、`record` 三张表（InnoDB、utf8mb4）；脚本重复执行、元数据及注册登录链路验证通过。
 - **JDK**：项目为 Java 8；本机全局 `settings.xml` 的 `jdk-17` profile 已去掉 `activeByDefault`（仅 JDK 17 时激活），JDK 8 下 pom 的 8 生效。
 - **Bot 沙箱（2.3）**：需 botrunningsystem 跑 JDK 8（jOOR 兼容）；`kob.bot.executor=sandbox` 启用，子进程用 `kob.bot.sandbox.java-home`（默认 JDK 8 路径）、超时 `kob.bot.sandbox.timeout-ms`。
 
 ## 阻塞与 gap（审计已列，非本批任务）
 
-- **仓库无建表脚本**：`user`/`bot`/`record` 表 DDL 未知，登录链路因此未通。需补 schema（独立工作）。
 - **历史密钥仍在 Git 历史**：源码已移除并轮换，但 `git filter-repo` 重写历史未做（代价大，待评估）。
 - **生产部署配置未知**：Nginx/Docker/AcWing 配置待补（审计第 8 节）。
 
