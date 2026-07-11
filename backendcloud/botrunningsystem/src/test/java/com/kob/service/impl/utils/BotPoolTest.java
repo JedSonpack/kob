@@ -55,7 +55,7 @@ class BotPoolTest {
         pool = new RecordingBotPool();
         pool.start();
         for (int i = 0; i < 5; i++) {
-            pool.addBot(i, "code", "input");
+            pool.addBot(i, "code", "input", "g1", 0);
         }
 
         long deadline = System.currentTimeMillis() + 5000;
@@ -78,12 +78,12 @@ class BotPoolTest {
         pool.consumeStarted = new CountDownLatch(1);
         pool.start();
 
-        pool.addBot(1, "code", "input");  // 触发慢消费
+        pool.addBot(1, "code", "input", "g1", 0);  // 触发慢消费
         assertTrue(pool.consumeStarted.await(2, TimeUnit.SECONDS), "consume 应启动");
 
         // consume 正在 sleep；若锁未释放，此 addBot 会被阻塞到 consume 结束
         long t0 = System.currentTimeMillis();
-        pool.addBot(2, "code", "input");
+        pool.addBot(2, "code", "input", "g1", 0);
         long elapsed = System.currentTimeMillis() - t0;
 
         assertTrue(elapsed < 300, "生产者不应在 consume 期间阻塞，实际耗时 " + elapsed + "ms");

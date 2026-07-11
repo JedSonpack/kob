@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Game extends Thread {
@@ -26,6 +27,8 @@ public class Game extends Thread {
     private ReentrantLock lock = new ReentrantLock();
     private String status = "playing";  // playing -> finished
     private String loser = "";  // all: 平局，A: A输，B: B输
+    private final String gameId = UUID.randomUUID().toString().replaceAll("-", "");  // 审计 2.1：对局唯一标识
+    private volatile Integer currentRoundId = 0;  // 审计 2.1：当前回合，Bot 回调须匹配
 
     public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Bot botA, Integer idB, Bot botB) {
         this.rows = rows;
@@ -73,6 +76,26 @@ public class Game extends Thread {
         lock.lock();
         try {
             this.nextStepB = nextStepB;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** 审计 2.1：Bot 回调校验并应用移动。gameId/roundId 不匹配则忽略（防串局/迟到/乱序）。 */
+    public boolean applyBotMove(Integer userId, Integer direction, String callbackGameId, Integer callbackRoundId) {
+        lock.lock();
+        try {
+            if (!PkValidation.isMoveForCurrentRound(callbackGameId, callbackRoundId, gameId, currentRoundId)) {
+                return false;
+            }
+            if (playerA.getId().equals(userId)) {
+                setNextStepA(direction);
+                return true;
+            } else if (playerB.getId().equals(userId)) {
+                setNextStepB(direction);
+                return true;
+            }
+            return false;
         } finally {
             lock.unlock();
         }
@@ -169,6 +192,9 @@ public class Game extends Thread {
         data.add("bot_code", player.getBotCode());
 
         data.add("input", getInput(player));
+
+        data.add("game_id", gameId);  // 审计 2.1：关联对局与回合，防串局
+        data.add("round_id", currentRoundId.toString());
 
         WebSocketServer.restTemplate.postForObject(WebSocketServer.addBotUrl, data, String.class);
 
@@ -307,6 +333,7 @@ public class Game extends Thread {
 
     public void run() {
         for (int i = 0; i < 1000; i++) {
+            currentRoundId = i;  // 审计 2.1：当前回合
             if (nextStep()) {  // 是否获取了两条蛇的下一步操作
                 judge();
                 if (status.equals("playing")) {

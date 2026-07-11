@@ -72,6 +72,8 @@ public class Consumer extends Thread {
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.add("user_id", bot.getUserId().toString());
         data.add("direction", direction.toString());
+        data.add("game_id", bot.getGameId());  // 审计 2.1：回传对局与回合
+        data.add("round_id", bot.getRoundId().toString());
 
         restTemplate.postForObject(receiveBotMoveUrl, data, String.class);
 

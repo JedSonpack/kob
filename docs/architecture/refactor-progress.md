@@ -4,7 +4,7 @@
 > 增量原则：每次一个小模块，独立提交、可回滚。
 > 更新日期：2026-07-11
 
-**进度：8 / 20 任务已完成**（master 本地领先 origin 8 个提交，未 push）
+**进度：9 / 20 任务已完成**（master 本地领先 origin 9 个提交，未 push）
 
 ## 任务状态
 
@@ -22,7 +22,7 @@
 | 1.3 | `BotPool` 锁修复 | ✅ | `fadd34c` | run() 改标准模式，成对释放锁 |
 | 1.4 | 注册空指针修复 | ✅ | `7213d66` | TDD RED→GREEN |
 | **阶段 2：Bot 协议与执行** | | | | |
-| 2.1 | Bot 请求关联协议 | ⏳ | - | P0-4 防串局，下一个 |
+| 2.1 | Bot 请求关联协议 | ✅ | 本批 | gameId/roundId 防串局 |
 | 2.2 | Bot 执行器接口 | ⬜ | - | 建边界，不改执行方式 |
 | 2.3 | 独立沙箱执行器 | ⬜ | - | 隔离文件/网络/CPU/内存（P0 安全） |
 | 2.4 | 游戏结果事务 | ✅ | 本批 | 抽取 GameResultService（@Transactional） |
@@ -32,7 +32,7 @@
 | 3.3 | WebSocket 会话状态机 | ⬜ | - | 去固定延时与竞态 |
 | **阶段 4：边界拆分** | | | | |
 | 4.1 | 外置服务 URL 和超时 | ✅ | 本批 | RestTemplate 加超时 + 5 个 URL 外置 |
-| 4.2 | 抽取连接注册表 | ⬜ | - | 从 `WebSocketServer` 分离 |
+| 4.2 | 抽取连接注册表 | ⏳ | - | 从 WebSocketServer 分离，下一个 |
 | 4.3 | 抽取游戏持久化与消息发布 | ⬜ | - | 降低 `Game` 依赖 |
 | **阶段 5：工具链** | | | | |
 | 5.1 | DTO 与统一校验 | ⬜ | - | 先迁一个端点 |
@@ -60,3 +60,4 @@
 - **批 4（0.3 + 1.3）**：BotPool 锁计数泄漏修复 + 并发测试。run() 改标准生产-消费模式（try/finally 成对释放），consume 移到锁外。22 测试绿。
 - **批 5（4.1）**：外置服务 URL 与超时。3 个 RestTemplate 加连接/读取超时（默认 5s/3s，可配置），5 个服务间 URL 改 @Value 注入（默认本地地址）。24 测试绿。
 - **批 6（2.4）**：游戏结果事务。抽取 `GameResultService`（@Transactional），原子保存双方积分与战绩；Game.saveToDatabase 委托。27 测试绿（事务回滚集成测试需 schema，未验证）。
+- **批 7（2.1）**：Bot 请求关联协议。Game 增加 gameId/currentRoundId，bot 执行链路（backend↔botrunning）贯穿 gameId/roundId，回调校验匹配才应用（防串局/迟到/乱序）。31 测试绿。

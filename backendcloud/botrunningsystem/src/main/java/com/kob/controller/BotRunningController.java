@@ -19,6 +19,8 @@ public class BotRunningController {
         Integer userId = Integer.parseInt(Objects.requireNonNull(data.getFirst("user_id")));
         String botCode = data.getFirst("bot_code");
         String input = data.getFirst("input");
-        return botRunningService.addBot(userId, botCode, input);
+        String gameId = data.getFirst("game_id");  // 审计 2.1
+        Integer roundId = Integer.parseInt(Objects.requireNonNull(data.getFirst("round_id")));
+        return botRunningService.addBot(userId, botCode, input, gameId, roundId);
     }
 }

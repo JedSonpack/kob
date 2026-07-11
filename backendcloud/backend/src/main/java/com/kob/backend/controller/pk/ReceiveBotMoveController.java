@@ -22,7 +22,10 @@ public class ReceiveBotMoveController {
 
         Integer direction = Integer.parseInt(Objects.requireNonNull(data.getFirst("direction")));
 
-        return receiveBotMoveService.receiveBotMove(userId, direction);
+        String gameId = data.getFirst("game_id");  // 审计 2.1
+        Integer roundId = Integer.parseInt(Objects.requireNonNull(data.getFirst("round_id")));
+
+        return receiveBotMoveService.receiveBotMove(userId, direction, gameId, roundId);
     }
 }
 

@@ -26,4 +26,14 @@ public final class PkValidation {
         if (botId == -1) return true;
         return bot != null && userId != null && userId.equals(bot.getUserId());
     }
+
+    /**
+     * Bot 回调是否属于当前对局与回合（审计 P0-4，防止串局/迟到/乱序回调）。
+     * gameId 与 roundId 均须匹配当前对局。
+     */
+    public static boolean isMoveForCurrentRound(String callbackGameId, Integer callbackRoundId,
+                                                 String currentGameId, Integer currentRoundId) {
+        if (currentGameId == null || currentRoundId == null) return false;
+        return currentGameId.equals(callbackGameId) && currentRoundId.equals(callbackRoundId);
+    }
 }

@@ -11,10 +11,10 @@ public class BotPool extends Thread {
     private final Condition condition = lock.newCondition();
     private final Queue<Bot> bots = new LinkedList<>();
 
-    public void addBot(Integer userId, String botCode, String input) {
+    public void addBot(Integer userId, String botCode, String input, String gameId, Integer roundId) {
         lock.lock();
         try {
-            bots.add(new Bot(userId, botCode, input));
+            bots.add(new Bot(userId, botCode, input, gameId, roundId));
             condition.signalAll(); //唤醒所有线程
         } finally {
             lock.unlock();
