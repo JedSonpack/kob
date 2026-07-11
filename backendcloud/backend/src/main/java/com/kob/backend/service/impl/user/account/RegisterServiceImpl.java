@@ -33,6 +33,7 @@ public class RegisterServiceImpl implements RegisterService {
         }
         if (password == null || confirmedPassword == null) {
             res.put("error_message", "密码不能为空");
+            return res;
         }
 
         username = username.trim();

@@ -81,6 +81,20 @@ class RegisterServiceImplTest {
     }
 
     @Test
+    void register_whenPasswordNull_returnsPasswordEmpty() {
+        Map<String, String> res = registerService.register("user", null, "pass");
+        assertEquals("密码不能为空", res.get("error_message"));
+        verifyNoInteractions(userMapper, passwordEncoder);
+    }
+
+    @Test
+    void register_whenConfirmedPasswordNull_returnsPasswordEmpty() {
+        Map<String, String> res = registerService.register("user", "pass", null);
+        assertEquals("密码不能为空", res.get("error_message"));
+        verifyNoInteractions(userMapper, passwordEncoder);
+    }
+
+    @Test
     void register_whenPasswordTooLong_returnsPasswordTooLong() {
         String longPassword = String.join("", Collections.nCopies(101, "a"));
         Map<String, String> res = registerService.register("user", longPassword, longPassword);
