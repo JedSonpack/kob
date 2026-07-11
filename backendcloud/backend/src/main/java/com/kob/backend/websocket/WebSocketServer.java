@@ -9,6 +9,7 @@ import com.kob.backend.pojo.Record;
 import com.kob.backend.pojo.User;
 import com.kob.backend.websocket.utils.Game;
 import com.kob.backend.websocket.utils.JwtAuthentication;
+import com.kob.backend.websocket.utils.PkValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -105,8 +106,11 @@ public class WebSocketServer {
     public static void startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId) {
         User a = userMapper.selectById(aId), b = userMapper.selectById(bId);
 
-        Bot botA = botMapper.selectById(aBotId);
-        Bot botB = botMapper.selectById(bBotId);
+        Bot botA = (aBotId != null && aBotId != -1) ? botMapper.selectById(aBotId) : null;
+        Bot botB = (bBotId != null && bBotId != -1) ? botMapper.selectById(bBotId) : null;
+        if (!PkValidation.isBotAllowed(aBotId, botA, aId) || !PkValidation.isBotAllowed(bBotId, botB, bId)) {
+            throw new RuntimeException("Bot 不存在或不属于该用户");
+        }
 
         Game game = new Game(13,
                 14,
@@ -156,6 +160,16 @@ public class WebSocketServer {
     private void startMatching(Integer bot_id) {
 
         System.out.println("start matching!");
+        // 校验 Bot 归属（审计 1.2，防止运行他人 Bot）
+        Bot bot = (bot_id != null && bot_id != -1) ? botMapper.selectById(bot_id) : null;
+        if (!PkValidation.isBotAllowed(bot_id, bot, this.user.getId())) {
+            JSONObject resp = new JSONObject();
+            resp.put("event", "error");
+            resp.put("message", "Bot 不存在或不属于当前用户");
+            sendMessage(resp.toJSONString());
+            return;
+        }
+
         //像后端发请求
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
 

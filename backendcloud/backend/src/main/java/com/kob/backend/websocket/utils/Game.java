@@ -62,6 +62,7 @@ public class Game extends Thread {
     }
 
     public void setNextStepA(Integer nextStepA) {
+        if (!PkValidation.isValidDirection(nextStepA)) return;  // 非法方向忽略（审计 1.2，防止越界崩线程）
         lock.lock();
         try {
             this.nextStepA = nextStepA;
@@ -71,6 +72,7 @@ public class Game extends Thread {
     }
 
     public void setNextStepB(Integer nextStepB) {
+        if (!PkValidation.isValidDirection(nextStepB)) return;  // 非法方向忽略（审计 1.2，防止越界崩线程）
         lock.lock();
         try {
             this.nextStepB = nextStepB;
