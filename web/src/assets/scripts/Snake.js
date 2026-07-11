@@ -78,17 +78,13 @@ export class Snake extends AcGameObject {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance < this.eps) {
-      // 走到目标点了
-      this.cells[0] = this.next_cell; // 添加一个新蛇头
-      this.next_cell = null;
-      this.status = "idle"; // 走完了，停下来
-
-      if (!this.check_tail_increasing()) {
-        // 蛇不变长，此时倒数第一个和倒数第二个就重合了
-        this.cells.pop(); //去掉蛇尾
-      }
+      this.finish_move();
     } else {
       const move_distance = (this.speed * this.timedelta) / 1000; // 每两帧之间走的距离
+      if (move_distance >= distance) {
+        this.finish_move();
+        return;
+      }
       this.cells[0].x += (move_distance * dx) / distance;
       this.cells[0].y += (move_distance * dy) / distance;
 
@@ -102,6 +98,16 @@ export class Snake extends AcGameObject {
         tail.x += (move_distance * tail_dx) / distance;
         tail.y += (move_distance * tail_dy) / distance;
       }
+    }
+  }
+
+  finish_move() {
+    if (!this.next_cell) return;
+    this.cells[0] = this.next_cell;
+    this.next_cell = null;
+    this.status = "idle";
+    if (!this.check_tail_increasing()) {
+      this.cells.pop();
     }
   }
 

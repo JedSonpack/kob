@@ -11,3 +11,67 @@ export function safeSend(socket, message) {
   }
   return false;
 }
+
+function applyGameEvent(game, data, updateLoser) {
+  const [snake0, snake1] = game.snakes;
+
+  if (data.event === "move") {
+    snake0.set_direction(data.a_direction);
+    snake1.set_direction(data.b_direction);
+  } else if (data.event === "result") {
+    if (data.loser === "all" || data.loser === "A") {
+      snake0.status = "die";
+    }
+    if (data.loser === "all" || data.loser === "B") {
+      snake1.status = "die";
+    }
+    updateLoser(data.loser);
+  }
+}
+
+function isReadyForNextEvent(game) {
+  return game.snakes.every(
+    (snake) => snake.status === "idle" && snake.direction === -1
+  );
+}
+
+export function createGameEventDispatcher(getGame, updateLoser) {
+  const pendingEvents = [];
+
+  const catchUpToResult = (game) => {
+    if (typeof game.finishCurrentMove === "function") {
+      game.finishCurrentMove();
+    }
+    while (pendingEvents.length > 0) {
+      const event = pendingEvents.shift();
+      applyGameEvent(game, event, updateLoser);
+      if (event.event === "move" && typeof game.finishCurrentMove === "function") {
+        game.finishCurrentMove();
+      }
+    }
+    if (typeof game.renderCurrentState === "function") {
+      game.renderCurrentState();
+    }
+  };
+
+  return {
+    dispatch(data) {
+      pendingEvents.push(data);
+      return this.flush();
+    },
+    flush() {
+      const game = getGame();
+      if (!game || pendingEvents.length === 0) {
+        return false;
+      }
+      if (pendingEvents.some((event) => event.event === "result")) {
+        catchUpToResult(game);
+        return true;
+      }
+      if (!isReadyForNextEvent(game)) return false;
+
+      applyGameEvent(game, pendingEvents.shift(), updateLoser);
+      return true;
+    },
+  };
+}

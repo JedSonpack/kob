@@ -37,6 +37,7 @@
           @click="click_match_btn"
           type="button"
           class="btn btn-warning btn-lg"
+          :disabled="!socketReady"
         >
           {{ match_btn_info }}
         </button>
@@ -46,7 +47,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import $ from "jquery";
 import { safeSend } from "../assets/scripts/pkSocket";
@@ -57,25 +58,28 @@ export default {
     let match_btn_info = ref("开始匹配");
     let bots = ref([]);
     let select_bot = ref("-1");
+    const socketReady = computed(
+      () => store.state.pk.socket?.readyState === WebSocket.OPEN
+    );
 
     const click_match_btn = () => {
       if (match_btn_info.value === "开始匹配") {
-        match_btn_info.value = "取消";
-        safeSend(store.state.pk.socket, JSON.stringify({  // 审计 3.3：安全发送，未连接不抛异常
+        const sent = safeSend(store.state.pk.socket, JSON.stringify({
           event: "start-matching",
           bot_id: select_bot.value,
         }));
+        if (sent) match_btn_info.value = "取消";
       } else {
-        match_btn_info.value = "开始匹配";
-        safeSend(store.state.pk.socket, JSON.stringify({
+        const sent = safeSend(store.state.pk.socket, JSON.stringify({
           event: "stop-matching",
         }));
+        if (sent) match_btn_info.value = "开始匹配";
       }
     };
 
     const refresh_bots = () => {
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/bot/getlist/",
+        url: "/api/user/bot/getlist/",
         type: "get",
         headers: {
           Authorization: "Bearer " + store.state.user.token,
@@ -93,6 +97,7 @@ export default {
       click_match_btn,
       bots,
       select_bot,
+      socketReady,
     };
   },
 };

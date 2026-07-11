@@ -12,6 +12,7 @@ export default {
     b_sx: 0,
     b_sy: 0,
     gameObject: null,
+    gameEventDispatcher: null,
     loser: "none", // none、all、A、B
   },
 
@@ -38,6 +39,9 @@ export default {
     },
     updateGameObject(state, gameObject) {
       state.gameObject = gameObject;
+    },
+    updateGameEventDispatcher(state, dispatcher) {
+      state.gameEventDispatcher = dispatcher;
     },
     updateLoser(state, loser) {
       state.loser = loser;

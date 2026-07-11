@@ -36,4 +36,16 @@ class OnlineUserRegistryTest {
         assertNull(registry.get(999));
         assertFalse(registry.contains(999));
     }
+
+    @Test
+    void removeOldConnection_doesNotRemoveReplacement() {
+        WebSocketServer oldConnection = new WebSocketServer();
+        WebSocketServer newConnection = new WebSocketServer();
+        registry.register(1, oldConnection);
+        registry.register(1, newConnection);
+
+        registry.remove(1, oldConnection);
+
+        assertSame(newConnection, registry.get(1));
+    }
 }

@@ -316,11 +316,10 @@ public class Game extends Thread {
             currentRoundId = i;  // 审计 2.1：当前回合
             if (nextStep()) {  // 是否获取了两条蛇的下一步操作
                 judge();
-                if (status.equals("playing")) {
-                    sendMove();
-                } else {
+                sendMove();
+                if (!status.equals("playing")) {
                     sendResult();
-                        break;
+                    break;
                 }
             } else {
                 status = "finished";

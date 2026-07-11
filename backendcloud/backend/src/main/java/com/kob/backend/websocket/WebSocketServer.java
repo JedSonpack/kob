@@ -123,9 +123,14 @@ public class WebSocketServer {
 
     @OnClose
     public void onClose() {
-        System.out.println("disconnected!");
+        System.out.println("disconnected! userId=" + (this.user != null ? this.user.getId() : "null"));
         if (this.user != null) {
-            onlineUserRegistry.remove(this.user.getId());
+            try {
+                stopMatching();  // 断开时从匹配池移除，防止断线玩家被配对导致"幽灵对战"
+            } catch (Exception e) {
+                // matchingsystem 不可用时忽略，不影响连接关闭
+            }
+            onlineUserRegistry.remove(this.user.getId(), this);
         }
     }
 
@@ -147,12 +152,10 @@ public class WebSocketServer {
                 botB
         );
         game.createMap();
-        if (onlineUserRegistry.get(a.getId()) != null)
-            onlineUserRegistry.get(a.getId()).game = game;
-        if (onlineUserRegistry.get(b.getId()) != null)
-            onlineUserRegistry.get(b.getId()).game = game;
-
-        game.start();
+        WebSocketServer connectionA = onlineUserRegistry.get(a.getId());
+        WebSocketServer connectionB = onlineUserRegistry.get(b.getId());
+        if (connectionA != null) connectionA.game = game;
+        if (connectionB != null) connectionB.game = game;
 
         JSONObject respGame = new JSONObject();
         respGame.put("a_id", game.getPlayerA().getId());
@@ -168,18 +171,16 @@ public class WebSocketServer {
         respA.put("opponent_username", b.getUsername());
         respA.put("opponent_photo", b.getPhoto());
         respA.put("game", respGame);
-        if (onlineUserRegistry.get(a.getId()) != null)
-            onlineUserRegistry.get(a.getId()).sendMessage(respA.toJSONString());
+        if (connectionA != null) connectionA.sendMessage(respA.toJSONString());
 
         JSONObject respB = new JSONObject();
         respB.put("event", "start-matching");
         respB.put("opponent_username", a.getUsername());
         respB.put("opponent_photo", a.getPhoto());
         respB.put("game", respGame);
-        if (onlineUserRegistry.get(b.getId()) != null)
-            onlineUserRegistry.get(b.getId()).sendMessage(respB.toJSONString());
+        if (connectionB != null) connectionB.sendMessage(respB.toJSONString());
 
-
+        game.start();
     }
 
 
@@ -219,6 +220,7 @@ public class WebSocketServer {
     }
 
     private void move(int d) { //收到消息后进行移动
+        if (game == null) return;
         if (game.getPlayerA().getId().equals(user.getId())) {
             if (game.getPlayerA().getBotId().equals(-1))  // 亲自出马 否则屏蔽输入
                 game.setNextStepA(d);
@@ -248,6 +250,7 @@ public class WebSocketServer {
 
     @OnError
     public void onError(Session session, Throwable error) {
+        System.out.println("ws-error userId=" + (this.user != null ? this.user.getId() : "null") + ": " + error);
         error.printStackTrace();
     }
 

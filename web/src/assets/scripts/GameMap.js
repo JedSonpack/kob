@@ -61,14 +61,13 @@ export class GameMap extends AcGameObject {
         k++;
       }, 300);
     } else {
-      this.ctx.canvas.focus();
-
       this.keydown_handler = (e) => {  // 审计 3.1：存引用，便于卸载移除
+        const kl = e.key.toLowerCase();
         let d = -1;
-        if (e.key === "w") d = 0;
-        else if (e.key === "d") d = 1;
-        else if (e.key === "s") d = 2;
-        else if (e.key === "a") d = 3;
+        if (kl === "w" || e.key === "ArrowUp") d = 0;
+        else if (kl === "d" || e.key === "ArrowRight") d = 1;
+        else if (kl === "s" || e.key === "ArrowDown") d = 2;
+        else if (kl === "a" || e.key === "ArrowLeft") d = 3;
 
         if (d >= 0) {
           this.store.state.pk.socket.send(
@@ -79,7 +78,7 @@ export class GameMap extends AcGameObject {
           );
         }
       };
-      this.ctx.canvas.addEventListener("keydown", this.keydown_handler);
+      window.addEventListener("keydown", this.keydown_handler);
     }
   }
 
@@ -88,8 +87,8 @@ export class GameMap extends AcGameObject {
       clearInterval(this.replay_interval_id);
       this.replay_interval_id = null;
     }
-    if (this.keydown_handler && this.ctx && this.ctx.canvas) {
-      this.ctx.canvas.removeEventListener("keydown", this.keydown_handler);
+    if (this.keydown_handler) {
+      window.removeEventListener("keydown", this.keydown_handler);
       this.keydown_handler = null;
     }
   }
@@ -127,6 +126,28 @@ export class GameMap extends AcGameObject {
     }
   }
 
+  finishCurrentMove() {
+    for (const snake of this.snakes) {
+      if (snake.status === "idle" && snake.direction !== -1) {
+        snake.next_step();
+      }
+      if (snake.status === "move") {
+        snake.finish_move();
+      }
+    }
+  }
+
+  renderCurrentState() {
+    this.update_size();
+    this.render();
+    for (const wall of this.walls) {
+      wall.render();
+    }
+    for (const snake of this.snakes) {
+      snake.render();
+    }
+  }
+
   // check_valid(cell) {
   //   // 检测目标位置是否合法：没有撞到两条蛇的身体和障碍物
   //   for (const wall of this.walls) {
@@ -150,6 +171,10 @@ export class GameMap extends AcGameObject {
 
   update() {
     this.update_size();
+    const gameEventDispatcher = this.store.state.pk.gameEventDispatcher;
+    if (gameEventDispatcher) {
+      gameEventDispatcher.flush();
+    }
     if (this.check_ready()) {
       this.next_step();
     }

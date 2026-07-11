@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { AC_GAME_OBJECTS, AcGameObject } from "./AcGameObject";
+import { Snake } from "./Snake";
 
 describe("AcGameObject destroy（审计 3.1）", () => {
   beforeEach(() => {
@@ -25,5 +26,21 @@ describe("AcGameObject destroy（审计 3.1）", () => {
     obj.on_destroy = vi.fn();
     obj.destroy();
     expect(obj.on_destroy).toHaveBeenCalled();
+  });
+});
+
+describe("Snake 后台恢复", () => {
+  test("超大 timedelta 不会越过当前目标格", () => {
+    const gamemap = { L: 10, ctx: {} };
+    const snake = new Snake({ id: 0, color: "blue", r: 5, c: 5 }, gamemap);
+    snake.set_direction(1);
+    snake.next_step();
+    snake.timedelta = 10_000;
+
+    snake.update_move();
+
+    expect(snake.cells[0].r).toBe(5);
+    expect(snake.cells[0].c).toBe(6);
+    expect(snake.status).toBe("idle");
   });
 });

@@ -25,9 +25,10 @@
 <script>
 import PlayGround from "../../components/PlayGround.vue";
 import { useStore } from "vuex";
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import MatchGround from "@/components/MatchGround.vue";
 import ResultBoard from "@/components/ResultBoard.vue";
+import { createGameEventDispatcher } from "@/assets/scripts/pkSocket";
 
 export default {
   components: {
@@ -37,10 +38,21 @@ export default {
   },
   setup() {
     const store = useStore();
-    const socketUrl = `wss://app4186.acapp.acwing.com.cn/websocket/${store.state.user.token}/`;
+    const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
+    const socketUrl = `${wsProto}://${window.location.host}/websocket/${store.state.user.token}/`;
 
     let socket = null;
     store.commit("updateIsRecord", false);
+    const gameEventDispatcher = createGameEventDispatcher(
+      () => store.state.pk.gameObject,
+      (loser) => store.commit("updateLoser", loser)
+    );
+    store.commit("updateGameEventDispatcher", gameEventDispatcher);
+
+    watch(
+      () => store.state.pk.gameObject,
+      () => gameEventDispatcher.flush()
+    );
 
     onMounted(() => {
       store.commit("updateOpponent", {
@@ -67,23 +79,9 @@ export default {
           store.commit("updateGame", data.game);
           store.commit("updateStatus", "playing");  // 审计 3.3：去掉固定 100ms 延时，立即切对战
         } else if (data.event === "move") {
-          const game = store.state.pk.gameObject;
-          if (!game) return;  // 审计 3.3：gameObject 未就绪则忽略，避免竞态崩溃
-          const [snake0, snake1] = game.snakes;
-          snake0.set_direction(data.a_direction);
-          snake1.set_direction(data.b_direction);
+          gameEventDispatcher.dispatch(data);
         } else if (data.event === "result") {
-          const game = store.state.pk.gameObject;
-          if (!game) return;  // 审计 3.3：gameObject 未就绪则忽略
-          const [snake0, snake1] = game.snakes;
-
-          if (data.loser === "all" || data.loser === "A") {
-            snake0.status = "die";
-          }
-          if (data.loser === "all" || data.loser === "B") {
-            snake1.status = "die";
-          }
-          store.commit("updateLoser", data.loser);
+          gameEventDispatcher.dispatch(data);
         }
       };
 
@@ -94,6 +92,7 @@ export default {
 
     onUnmounted(() => {
       store.commit("updateLoser", "none");
+      store.commit("updateGameEventDispatcher", null);
       socket.close();
       store.commit("updateStatus", "matching");
     });

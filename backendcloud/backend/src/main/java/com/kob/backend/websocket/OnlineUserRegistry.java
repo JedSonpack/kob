@@ -23,6 +23,10 @@ public class OnlineUserRegistry {
         users.remove(userId);
     }
 
+    public void remove(Integer userId, WebSocketServer ws) {
+        users.remove(userId, ws);
+    }
+
     public WebSocketServer get(Integer userId) {
         return users.get(userId);
     }
