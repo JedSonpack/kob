@@ -46,7 +46,6 @@
 
 <script>
 import ContentField from "../../components/ContentField.vue";
-import { useStore } from "vuex";
 import { ref } from "vue";
 import { api } from "../../assets/scripts/apiClient";
 export default {
@@ -54,7 +53,6 @@ export default {
     ContentField,
   },
   setup() {
-    const store = useStore();
     let users = ref([]);
     let current_page = 1;
     let total_users = 0;
