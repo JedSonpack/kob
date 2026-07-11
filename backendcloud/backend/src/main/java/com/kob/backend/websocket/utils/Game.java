@@ -299,11 +299,8 @@ public class Game extends Thread {
 
 
     private void sendAllMessage(String message) {
-
-        if (WebSocketServer.onlineUserRegistry.get(playerA.getId()) != null)
-            WebSocketServer.onlineUserRegistry.get(playerA.getId()).sendMessage(message);
-        if (WebSocketServer.onlineUserRegistry.get(playerB.getId()) != null)
-            WebSocketServer.onlineUserRegistry.get(playerB.getId()).sendMessage(message);
+        // 审计 4.3：委托消息发布器，不再直接访问连接表
+        WebSocketServer.gameMessagePublisher.broadcast(playerA.getId(), playerB.getId(), message);
     }
 
     private void sendMove() {  // 向两个Client传递移动信息

@@ -9,6 +9,7 @@ import com.kob.backend.pojo.Record;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.pk.GameResultService;
 import com.kob.backend.websocket.utils.Game;
+import com.kob.backend.websocket.utils.GameMessagePublisher;
 import com.kob.backend.websocket.utils.JwtAuthentication;
 import com.kob.backend.websocket.utils.PkValidation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class WebSocketServer {
     public static RestTemplate restTemplate;
     private static BotMapper botMapper;
     public static GameResultService gameResultService;
+    public static GameMessagePublisher gameMessagePublisher;
 
     @Autowired
     public void setBotMapper(BotMapper botMapper) {
@@ -90,6 +92,11 @@ public class WebSocketServer {
     @Autowired
     public void setOnlineUserRegistry(OnlineUserRegistry onlineUserRegistry) {
         WebSocketServer.onlineUserRegistry = onlineUserRegistry;
+    }
+
+    @Autowired
+    public void setGameMessagePublisher(GameMessagePublisher gameMessagePublisher) {
+        WebSocketServer.gameMessagePublisher = gameMessagePublisher;
     }
 
     @OnOpen
