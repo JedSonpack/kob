@@ -6,7 +6,8 @@ import store from "../../store/index";
  *
  * <p>集中 API 基址、认证头与错误处理，替代散落在各页面的 $.ajax 直调。
  */
-export const BASE_URL = "https://app4186.acapp.acwing.com.cn";
+// 本地开发走 vue.config.js 的 devServer 代理（相对路径），无需后端配置 CORS。
+export const BASE_URL = "";
 
 /** 构造带认证头的 ajax 配置（纯函数，便于测试）。 */
 export function buildAjaxConfig({ url, data, type, token }) {

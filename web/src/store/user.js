@@ -40,7 +40,7 @@ export default {
     //修改state
     login(context, data) {
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/account/token/",
+        url: "/api/user/account/token/",
         type: "post",
         data: {
           username: data.username,
@@ -62,7 +62,7 @@ export default {
     },
     getinfo(context, data) {
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/account/info/",
+        url: "/api/user/account/info/",
         type: "get",
         headers: {
           Authorization: "Bearer " + context.state.token,

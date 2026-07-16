@@ -249,6 +249,75 @@ import "ace-builds/src-noconflict/theme-chrome";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/mode-c_cpp";
 
+/**
+ * Bot 代码模板：输入解析已写好，用户只需改 nextMove 中「在这里写你的决策」一段。
+ * 提交时仍是完整可编译类，后端执行器无需改动。
+ */
+const BOT_TEMPLATE = `package com.kob.test;
+import java.io.File;
+import java.util.*;
+import java.util.function.Supplier;
+
+/**
+ * KOB Bot 模板——只需修改 nextMove 中「在这里写你的决策」下方的代码。
+ *
+ * input 格式（# 分隔）：地图#我sx#我sy#(我的历史操作)#对手sx#对手sy#(对手历史操作)
+ *   地图：13×14 的 0/1 拼接，0=可走，1=墙；操作：0=上 1=右 2=下 3=左
+ * 返回：0=上 1=右 2=下 3=左
+ */
+public class Bot implements java.util.function.Supplier<Integer> {
+    static int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
+
+    public static Integer nextMove(String input) {
+        String[] s = input.split("#");
+        int[][] g = new int[13][14];
+        for (int i = 0, k = 0; i < 13; i++)
+            for (int j = 0; j < 14; j++, k++)
+                if (s[0].charAt(k) == '1') g[i][j] = 1;
+
+        // 自己的蛇身 aCells、对手蛇身 bCells、我的蛇头 head 已解析好
+        List<int[]> aCells = getCells(Integer.parseInt(s[1]), Integer.parseInt(s[2]),
+                s[3].substring(1, s[3].length() - 1));
+        List<int[]> bCells = getCells(Integer.parseInt(s[4]), Integer.parseInt(s[5]),
+                s[6].substring(1, s[6].length() - 1));
+        for (int[] c : aCells) g[c[0]][c[1]] = 1;
+        for (int[] c : bCells) g[c[0]][c[1]] = 1;
+        int[] head = aCells.get(aCells.size() - 1);
+
+        // ===== 在这里写你的决策（默认：找第一个不会撞的方向）=====
+        for (int i = 0; i < 4; i++) {
+            int x = head[0] + dx[i], y = head[1] + dy[i];
+            if (x >= 0 && x < 13 && y >= 0 && y < 14 && g[x][y] == 0) return i;
+        }
+        // ===== 决策结束 =====
+
+        return 0;
+    }
+
+    /** 以下为辅助方法，一般无需修改 **/
+
+    static List<int[]> getCells(int sx, int sy, String steps) {
+        List<int[]> res = new ArrayList<>();
+        int x = sx, y = sy, step = 0;
+        res.add(new int[]{x, y});
+        for (int i = 0; i < steps.length(); i++) {
+            int d = steps.charAt(i) - '0';
+            x += dx[d]; y += dy[d];
+            res.add(new int[]{x, y});
+            if (!checkTail(++step)) res.remove(0);
+        }
+        return res;
+    }
+
+    static boolean checkTail(int step) { return step <= 10 || step % 3 == 1; }
+
+    @Override
+    public Integer get() {
+        try { return nextMove(new Scanner(new File("input.txt")).next()); }
+        catch (Exception e) { return 0; }
+    }
+}`;
+
 export default {
   components: {
     VAceEditor,
@@ -268,13 +337,13 @@ export default {
     const botadd = reactive({
       title: "",
       description: "",
-      content: "",
+      content: BOT_TEMPLATE,
       error_message: "",
     });
 
     const refresh_bots = () => {
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/bot/getlist/",
+        url: "/api/user/bot/getlist/",
         type: "get",
         headers: {
           Authorization: "Bearer " + store.state.user.token,
@@ -293,7 +362,7 @@ export default {
     const add_bot = () => {
       botadd.error_message = "";
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/bot/add/",
+        url: "/api/user/bot/add/",
         type: "post",
         data: {
           title: botadd.title,
@@ -307,7 +376,7 @@ export default {
           if (resp.error_message === "success") {
             botadd.title = "";
             botadd.description = "";
-            botadd.content = "";
+            botadd.content = BOT_TEMPLATE;
             //将模态框关闭
             Modal.getInstance("#add-bot-btn").hide();
             refresh_bots();
@@ -319,7 +388,7 @@ export default {
     };
     const remove_bot = (bot) => {
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/bot/remove/",
+        url: "/api/user/bot/remove/",
         type: "post",
         data: {
           bot_id: bot.id,
@@ -338,7 +407,7 @@ export default {
     const update_bot = (bot) => {
       botadd.error_message = "";
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/user/bot/update/",
+        url: "/api/user/bot/update/",
         type: "post",
         data: {
           bot_id: bot.id,

@@ -30,7 +30,7 @@ export default {
       }
       const recordId = route.params.recordId;
       $.ajax({
-        url: "https://app4186.acapp.acwing.com.cn/api/record/get/",
+        url: "/api/record/get/",
         data: { recordId },
         type: "get",
         headers: {
