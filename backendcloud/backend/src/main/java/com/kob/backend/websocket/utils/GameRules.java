@@ -1,11 +1,15 @@
 package com.kob.backend.websocket.utils;
 
+import com.kob.game.core.CoreGameRules;
+import com.kob.game.core.Position;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 游戏规则纯函数（审计任务 0.2）。
+ * 游戏规则纯函数（审计任务 0.2 / 阶段 1 任务 6）。
  *
- * <p>从 Player/Game 抽出蛇增长与碰撞判定逻辑，便于单元测试锁定规则。
+ * <p>保留在线对战的既有签名，内部委托 {@link CoreGameRules}，使在线与离线评测共用同一份规则。
  */
 public final class GameRules {
 
@@ -16,8 +20,7 @@ public final class GameRules {
      * <p>step 从 1 起计：前 10 回合每回合增长；之后每 3 回合增长一次（step%3==1）。
      */
     public static boolean checkTailIncreasing(int step) {
-        if (step <= 10) return true;
-        return step % 3 == 1;
+        return CoreGameRules.isGrowing(step);
     }
 
     /**
@@ -25,15 +28,14 @@ public final class GameRules {
      * <p>selfCells/opponentCells 末尾为蛇头；不判定头对头（原规则语义）。
      */
     public static boolean checkValid(List<Cell> selfCells, List<Cell> opponentCells, int[][] g) {
-        int n = selfCells.size();
-        Cell head = selfCells.get(n - 1);
-        if (g[head.x][head.y] == 1) return false;  // 撞墙
-        for (int i = 0; i < n - 1; i++) {
-            if (selfCells.get(i).x == head.x && selfCells.get(i).y == head.y) return false;  // 撞自身
+        return CoreGameRules.isAlive(toPositions(selfCells), toPositions(opponentCells), g);
+    }
+
+    private static List<Position> toPositions(List<Cell> cells) {
+        List<Position> positions = new ArrayList<>(cells.size());
+        for (Cell cell : cells) {
+            positions.add(new Position(cell.getX(), cell.getY()));
         }
-        for (int i = 0; i < n - 1; i++) {
-            if (opponentCells.get(i).x == head.x && opponentCells.get(i).y == head.y) return false;  // 撞对手
-        }
-        return true;
+        return positions;
     }
 }

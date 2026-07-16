@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.kob.backend.pojo.Bot;
 import com.kob.backend.websocket.WebSocketServer;
 import com.kob.backend.websocket.utils.Player;
+import com.kob.game.core.DeterministicMapGenerator;
+import com.kob.game.core.GameConfig;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -20,7 +22,7 @@ public class Game extends Thread {
     private final Integer cols;
     private final Integer inner_walls_count;
     private final int[][] g;
-    private final static int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
+    private final long seed;
     private final Player playerA, playerB;
     private Integer nextStepA = null;
     private Integer nextStepB = null;
@@ -31,9 +33,15 @@ public class Game extends Thread {
     private volatile Integer currentRoundId = 0;  // 审计 2.1：当前回合，Bot 回调须匹配
 
     public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Bot botA, Integer idB, Bot botB) {
+        this(rows, cols, inner_walls_count, idA, botA, idB, botB, new Random().nextLong());
+    }
+
+    /** 阶段 1 任务 6：带固定种子的确定性构造器，用于可复现地图与离线评测适配。 */
+    public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Bot botA, Integer idB, Bot botB, long seed) {
         this.rows = rows;
         this.cols = cols;
         this.inner_walls_count = inner_walls_count;
+        this.seed = seed;
         this.g = new int[rows][cols];
         Integer botIdA = -1, botIdB = -1;
         String botCodeA = "", botCodeB = "";
@@ -105,61 +113,14 @@ public class Game extends Thread {
         return g;
     }
 
-    private boolean check_connectivity(int sx, int sy, int tx, int ty) {
-        if (sx == tx && sy == ty) return true;
-        g[sx][sy] = 1;
-
-        for (int i = 0; i < 4; i++) {
-            int x = sx + dx[i], y = sy + dy[i];
-            if (x >= 0 && x < this.rows && y >= 0 && y < this.cols && g[x][y] == 0) {
-                if (check_connectivity(x, y, tx, ty)) {
-                    g[sx][sy] = 0;
-                    return true;
-                }
-            }
-        }
-
-        g[sx][sy] = 0;
-        return false;
-    }
-
-    private boolean draw() {  // 画地图
-        for (int i = 0; i < this.rows; i++) {
-            for (int j = 0; j < this.cols; j++) {
-                g[i][j] = 0;
-            }
-        }
-
-        for (int r = 0; r < this.rows; r++) {
-            g[r][0] = g[r][this.cols - 1] = 1;
-        }
-        for (int c = 0; c < this.cols; c++) {
-            g[0][c] = g[this.rows - 1][c] = 1;
-        }
-
-        Random random = new Random();
-        for (int i = 0; i < this.inner_walls_count / 2; i++) {
-            for (int j = 0; j < 1000; j++) {
-                int r = random.nextInt(this.rows);
-                int c = random.nextInt(this.cols);
-
-                if (g[r][c] == 1 || g[this.rows - 1 - r][this.cols - 1 - c] == 1)
-                    continue;
-                if (r == this.rows - 2 && c == 1 || r == 1 && c == this.cols - 2)
-                    continue;
-
-                g[r][c] = g[this.rows - 1 - r][this.cols - 1 - c] = 1;
-                break;
-            }
-        }
-
-        return check_connectivity(this.rows - 2, 1, 1, this.cols - 2);
-    }
-
     public void createMap() {
-        for (int i = 0; i < 1000; i++) {
-            if (draw())
-                break;
+        // 阶段 1 任务 6：委托 game-core 确定性生成器，删除旧 Random 画图与递归连通检查。
+        GameConfig config = new GameConfig(rows, cols, inner_walls_count, seed, 1000);
+        int[][] generated = new DeterministicMapGenerator().generate(config);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                g[i][j] = generated[i][j];
+            }
         }
     }
 
