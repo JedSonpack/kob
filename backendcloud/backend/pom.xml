@@ -103,6 +103,12 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.78</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.kob</groupId>
+            <artifactId>game-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
