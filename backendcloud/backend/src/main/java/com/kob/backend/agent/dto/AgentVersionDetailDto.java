@@ -21,6 +21,12 @@ public class AgentVersionDetailDto {
     private Integer publicGameCount;
     private Double publicScore;
     private Long publicP95Ms;
+    private Double publicWinRate;
+    private Double publicAverageRounds;
+    private Integer publicInvalidMoveCount;
+    // 源码与父版本只在单版本详情接口返回，不进入每秒轮询的任务详情，避免响应膨胀。
+    private String sourceCode;
+    private Long parentVersionId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date createdAt;
@@ -38,6 +44,9 @@ public class AgentVersionDetailDto {
             this.publicGameCount = publicEval.getGameCount();
             this.publicScore = publicEval.getScore();
             this.publicP95Ms = publicEval.getDecisionP95Ms();
+            this.publicWinRate = publicEval.getWinRate();
+            this.publicAverageRounds = publicEval.getAverageRounds();
+            this.publicInvalidMoveCount = publicEval.getInvalidMoveCount();
         }
     }
 }

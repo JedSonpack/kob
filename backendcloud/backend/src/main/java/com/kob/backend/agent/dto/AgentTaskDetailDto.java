@@ -30,6 +30,8 @@ public class AgentTaskDetailDto {
     private List<AgentStep> steps;
     private EvaluationAggregate publicEvaluation;
     private EvaluationAggregate hiddenEvaluation;
+    // 代表性录像摘要，仅在任务终态填充，供前端 Replay 面板选择 WIN/LOSS 各一条。
+    private List<AgentRunSummaryDto> representativeRuns;
 
     public AgentTaskDetailDto(AgentTask task) {
         this.id = task.getId();

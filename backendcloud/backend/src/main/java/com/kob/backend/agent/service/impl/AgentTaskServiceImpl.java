@@ -1,5 +1,6 @@
 package com.kob.backend.agent.service.impl;
 
+import com.kob.backend.agent.dto.AgentRunSummaryDto;
 import com.kob.backend.agent.dto.AgentTaskDetailDto;
 import com.kob.backend.agent.dto.AgentTaskListItemDto;
 import com.kob.backend.agent.dto.AgentVersionDetailDto;
@@ -31,6 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -135,6 +137,7 @@ public class AgentTaskServiceImpl implements AgentTaskService {
         dto.setPublicEvaluation(bestPublicEval(task, versions));
         if (AgentTaskStatus.valueOf(task.getStatus()).isTerminal()) {
             dto.setHiddenEvaluation(hiddenAggregate(task, task.getBestVersionId()));
+            dto.setRepresentativeRuns(representativeRuns(task.getBestVersionId()));
         }
         return dto;
     }
@@ -156,7 +159,11 @@ public class AgentTaskServiceImpl implements AgentTaskService {
         if (task == null || !task.getUserId().equals(user.getId())) {
             throw new AgentTaskNotFoundException("版本不存在");
         }
-        return new AgentVersionDetailDto(version, safePublicEval(task, version));
+        AgentVersionDetailDto dto = new AgentVersionDetailDto(version, safePublicEval(task, version));
+        // 单版本详情接口暴露源码与父版本，供前端代码对比；任务详情的版本列表不返回这两项。
+        dto.setSourceCode(version.getSourceCode());
+        dto.setParentVersionId(version.getParentVersionId());
+        return dto;
     }
 
     @Override
@@ -248,6 +255,29 @@ public class AgentTaskServiceImpl implements AgentTaskService {
         } catch (RuntimeException e) {
             return null;
         }
+    }
+
+    /**
+     * 最佳版本的代表性录像摘要（不含地图种子与移动序列）。终态才调用，故公开+隐藏集都可暴露。
+     */
+    private List<AgentRunSummaryDto> representativeRuns(Long versionId) {
+        if (versionId == null) {
+            return Collections.emptyList();
+        }
+        List<AgentRunSummaryDto> summaries = new ArrayList<>();
+        for (EvaluationRun run : evaluationRunRepository.findByVersionAndDataset(versionId, "PUBLIC")) {
+            summaries.add(toRunSummary(run));
+        }
+        for (EvaluationRun run : evaluationRunRepository.findByVersionAndDataset(versionId, "HIDDEN")) {
+            summaries.add(toRunSummary(run));
+        }
+        return summaries;
+    }
+
+    private static AgentRunSummaryDto toRunSummary(EvaluationRun run) {
+        return new AgentRunSummaryDto(run.getId(), run.getVersionId(), run.getOpponentKey(),
+                run.getSide(), run.getResult(), run.getRounds(), run.getDecisionP95Ms(),
+                run.getFailureReason(), run.getDatasetType());
     }
 
     private AgentTask ownedTask(Long taskId, Integer userId) {
