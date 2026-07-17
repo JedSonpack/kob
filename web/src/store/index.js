@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import ModuleUser from "./user";
 import ModulePk from "./pk";
 import ModuleRecord from "./record";
+import ModuleAgent from "./agent";
 
 export default createStore({
   state: {},
@@ -12,5 +13,6 @@ export default createStore({
     user: ModuleUser,
     pk: ModulePk,
     record: ModuleRecord,
+    agent: ModuleAgent,
   },
 });
