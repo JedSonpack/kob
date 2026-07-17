@@ -17,6 +17,7 @@ import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -50,7 +51,8 @@ class AnthropicMessagesLlmClientTest {
                 .andExpect(header("x-api-key", "test-key"))
                 .andExpect(header("anthropic-version", "2023-06-01"))
                 .andExpect(jsonPath("$.model").value("model-test"))
-                .andExpect(jsonPath("$.system").isString())
+                .andExpect(jsonPath("$.system").value(containsString(
+                        "GENERATING 必须返回 GENERATE_CODE")))
                 .andExpect(jsonPath("$.messages[0].role").value("user"))
                 .andExpect(jsonPath("$.messages[0].content").isString())
                 .andExpect(jsonPath("$.tools[0].name").value("submit_decision"))

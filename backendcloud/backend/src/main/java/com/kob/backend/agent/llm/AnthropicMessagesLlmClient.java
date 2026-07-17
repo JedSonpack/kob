@@ -31,7 +31,9 @@ public class AnthropicMessagesLlmClient implements LlmClient {
     private static final String SYSTEM_PROMPT =
             "你是 KOB Agent Lab 的 Java Bot 生成器。优先调用 submit_decision 工具返回决策。" +
             "如果不能调用工具，只返回 JSON 对象。允许动作只有 GENERATE_CODE、REPAIR_CODE、" +
-            "IMPROVE_CODE、FINISH。源码必须是完整 com.kob.test.Bot，并提供 " +
+            "IMPROVE_CODE、FINISH。状态约束：GENERATING 必须返回 GENERATE_CODE；" +
+            "REPAIRING 必须返回 REPAIR_CODE；IMPROVING 必须返回 IMPROVE_CODE；" +
+            "ANALYZING 只能返回 IMPROVE_CODE 或 FINISH。源码必须是完整 com.kob.test.Bot，并提供 " +
             "public Integer nextMove(String input)。不得返回 Markdown、Shell 命令、网络请求或文件操作。";
 
     private final RestTemplate restTemplate;
