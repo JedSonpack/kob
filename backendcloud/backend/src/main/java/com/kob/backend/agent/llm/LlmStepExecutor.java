@@ -30,26 +30,26 @@ public class LlmStepExecutor {
         this.stepRepository = stepRepository;
     }
 
-    public LlmStepResult execute(AgentTask task, LlmContext context, int iteration, int attempt, Long parentVersionId) {
+    public LlmStepResult execute(AgentTask task, LlmContext context, int versionIteration, int attempt, Long parentVersionId) {
         String key = "task:" + task.getId() + ":phase:" + context.getStatus().name()
-                + ":iteration:" + iteration + ":llm";
+                + ":iteration:" + context.getIteration() + ":llm";
         AgentStep existing = stepRepository.findByIdempotencyKey(key);
         if (existing != null && "SUCCESS".equals(existing.getStatus())) {
             return recover(existing);
         }
         LlmDecision decision = llmClient.decide(context);
         validator.validate(context.getStatus(), decision);
-        return persist(task, context, decision, iteration, attempt, parentVersionId, key);
+        return persist(task, context, decision, versionIteration, attempt, parentVersionId, key);
     }
 
     private LlmStepResult persist(AgentTask task, LlmContext context, LlmDecision decision,
-                                  int iteration, int attempt, Long parentVersionId, String key) {
+                                  int versionIteration, int attempt, Long parentVersionId, String key) {
         AgentStep step = stepRepository.insertRunning(task.getId(), context.getStatus().name(),
-                "llm", key, "iteration:" + iteration);
+                "llm", key, "iteration:" + versionIteration);
         if (decision.getAction() != AgentAction.FINISH) {
             BotVersion version = new BotVersion();
             version.setTaskId(task.getId());
-            version.setIteration(iteration);
+            version.setIteration(versionIteration);
             version.setAttempt(attempt);
             version.setParentVersionId(parentVersionId);
             version.setSourceCode(decision.getSourceCode());
