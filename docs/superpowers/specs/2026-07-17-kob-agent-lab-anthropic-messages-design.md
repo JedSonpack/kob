@@ -97,9 +97,11 @@ LlmClient
 ## 6. 错误处理
 
 - 网络、连接和读取超时继续映射为 `LLM_TIMEOUT`。
-- HTTP 4xx、缺失 `content`、无 `text`/有效 `tool_use`、非法决策 JSON 或未知动作映射为 `LLM_INVALID_RESPONSE`。
+- HTTP 400/401/403 等终态 4xx、缺失 `content`、无 `text`/有效 `tool_use`、非法决策 JSON 或未知动作映射为 `LLM_INVALID_RESPONSE`。
+- HTTP 408/429 与 5xx 采用有限重试；重试耗尽后映射为 `LLM_TIMEOUT`。
+- 线程中断后立即停止重试，避免任务取消后继续产生模型调用和 Token 消耗。
 - 沿用现有有限重试与退避策略，不新增无限等待。
-- 错误消息只包含状态和脱敏摘要，不包含请求正文、响应正文、密钥或模型思考内容。
+- 错误消息和异常链只包含状态与脱敏摘要，不挂载可能携带响应正文的底层异常。
 
 ## 7. 测试与验收
 

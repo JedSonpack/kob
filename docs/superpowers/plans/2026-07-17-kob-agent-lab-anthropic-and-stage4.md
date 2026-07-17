@@ -15,6 +15,8 @@
 - 不删除 `FakeLlmClient` 或 `OpenAiCompatibleLlmClient`。
 - API Key 只从运行环境读取，不进入 Git、Markdown、日志或 Trace。
 - 忽略 Anthropic `thinking` 内容，不能记录或参与决策 JSON 解析。
+- HTTP 408/429 与 5xx 只做有限重试；终态 4xx 不重试；线程中断立即停止调用。
+- 异常消息和 cause 不得保留模型响应正文、思考内容或 API Key。
 - 自动化回归使用 Fake LLM；只有受控真实实验使用 `anthropic-messages`。
 - 真实实验保持目标、数据集、评测规模和最大迭代次数不变。
 - 保留用户现有的 `backendcloud/botrunningsystem/input.txt` 删除，不修改无关工作区内容。
