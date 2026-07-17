@@ -1,7 +1,18 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { taskTimeoutMs } = require("./agent_lab_playwright");
+const { browserLaunchOptions, taskTimeoutMs } = require("./agent_lab_playwright");
+
+test("浏览器默认使用 Playwright 管理的可执行文件", () => {
+  assert.deepEqual(browserLaunchOptions(undefined), { headless: true });
+});
+
+test("浏览器允许显式使用本机 Chromium", () => {
+  assert.deepEqual(browserLaunchOptions("/tmp/chromium"), {
+    headless: true,
+    executablePath: "/tmp/chromium",
+  });
+});
 
 test("任务超时默认保持 180 秒", () => {
   assert.equal(taskTimeoutMs(undefined), 180_000);

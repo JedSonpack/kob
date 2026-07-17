@@ -12,6 +12,12 @@ function taskTimeoutMs(value) {
   return Number.isFinite(parsed) && parsed >= 180_000 ? parsed : 180_000;
 }
 
+function browserLaunchOptions(executablePath) {
+  return executablePath
+    ? { headless: true, executablePath }
+    : { headless: true };
+}
+
 function suffix() {
   return `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
 }
@@ -164,7 +170,9 @@ async function runE2e() {
 
   try {
     const user = await createUser();
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch(
+      browserLaunchOptions(process.env.KOB_PLAYWRIGHT_EXECUTABLE_PATH)
+    );
     context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     page = await context.newPage();
 
@@ -368,6 +376,7 @@ if (require.main === module) {
 
 module.exports = {
   assertNoHiddenIfRunning,
+  browserLaunchOptions,
   drainPending,
   isAcceptedBestVersion,
   isTaskDetailRequest,
