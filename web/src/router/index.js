@@ -8,7 +8,6 @@ import NotFound from "../views/error/NotFound";
 import UserAccountLoginView from "@/views/user/account/UserAccountLoginView";
 import UserAccountRegisterView from "@/views/user/account/UserAccountRegisterView";
 import store from "../store/index";
-
 const routes = [
   {
     path: "/",
@@ -47,6 +46,14 @@ const routes = [
     path: "/ranklist/",
     name: "ranklist_index",
     component: RanklistIndexView,
+    meta: {
+      requestAuth: true,
+    },
+  },
+  {
+    path: "/agent-lab/",
+    name: "agent_lab_index",
+    component: () => import("../views/agent/AgentLabIndexView.vue"),
     meta: {
       requestAuth: true,
     },

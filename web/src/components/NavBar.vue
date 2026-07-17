@@ -31,6 +31,15 @@
               >排行榜</router-link
             >
           </li>
+          <li class="nav-item">
+            <router-link
+              :class="
+                route_name == 'agent_lab_index' ? 'nav-link active' : 'nav-link'
+              "
+              :to="{ name: 'agent_lab_index' }"
+              >Agent Lab</router-link
+            >
+          </li>
         </ul>
 
         <ul class="navbar-nav" v-if="$store.state.user.is_login"> 
