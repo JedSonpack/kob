@@ -57,6 +57,9 @@ class AnthropicMessagesLlmClientTest {
                 .andExpect(jsonPath("$.messages[0].content").isString())
                 .andExpect(jsonPath("$.tools[0].name").value("submit_decision"))
                 .andExpect(jsonPath("$.tools[0].input_schema.type").value("object"))
+                .andExpect(jsonPath("$.thinking.type").value("disabled"))
+                .andExpect(jsonPath("$.tool_choice.type").value("tool"))
+                .andExpect(jsonPath("$.tool_choice.name").value("submit_decision"))
                 .andExpect(jsonPath("$.max_tokens").value(4096))
                 .andRespond(withSuccess(textResponse(FINISH_BODY), MediaType.APPLICATION_JSON));
 
