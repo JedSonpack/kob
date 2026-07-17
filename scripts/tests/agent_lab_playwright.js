@@ -1,5 +1,3 @@
-const { chromium } = require("playwright");
-
 const WEB_URL = process.env.KOB_WEB_URL || "http://127.0.0.1:8080";
 const API_URL = process.env.KOB_API_URL || "http://127.0.0.1:3000";
 const PASSWORD = "Playwright123";
@@ -7,6 +5,12 @@ const GOAL =
   "尽量扩大可活动区域，避免进入狭窄通道；在多个安全方向中优先保留后续选择。";
 const TERMINAL = new Set(["COMPLETED", "FAILED", "CANCELLED"]);
 const REQUIRED_PHASES = ["GENERATING", "COMPILING", "EVALUATING", "VALIDATING"];
+
+function taskTimeoutMs(value) {
+  if (value == null || value === "") return 180_000;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 180_000 ? parsed : 180_000;
+}
 
 function suffix() {
   return `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
@@ -139,6 +143,7 @@ function safeSummaryValue(value, fallback) {
 }
 
 async function runE2e() {
+  const { chromium } = require("playwright");
   let browser = null;
   let context = null;
   let page = null;
@@ -238,8 +243,8 @@ async function runE2e() {
     taskId = createData && createData.task_id;
     ensure(Number.isInteger(taskId) && taskId > 0, "TASK_ID_INVALID");
 
-    // 5-6. 轮询任务详情，运行中断言无 hiddenEvaluation，等待终态（180s）
-    const deadline = Date.now() + 180_000;
+    // 5-6. 默认等待 180s；真实模型实验可显式延长，不放宽自动化默认门禁。
+    const deadline = Date.now() + taskTimeoutMs(process.env.KOB_AGENT_E2E_TIMEOUT_MS);
     while (Date.now() < deadline) {
       detail = await requestJson("GET", `/api/agent/tasks/${taskId}/`, null, user.token);
       assertNoHiddenIfRunning(detail);
@@ -369,4 +374,5 @@ module.exports = {
   isValidPublicGameCount,
   runControlledCreateInteraction,
   runningDetailFailureCode,
+  taskTimeoutMs,
 };
