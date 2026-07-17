@@ -47,6 +47,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.kob</groupId>
+            <artifactId>game-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 
