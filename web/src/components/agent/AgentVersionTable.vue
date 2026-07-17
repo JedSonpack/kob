@@ -38,6 +38,22 @@
             <button class="btn btn-link btn-sm p-0" @click="$emit('view', v)">
               查看代码
             </button>
+            <template v-if="canSave && isBest(v.id)">
+              <button
+                v-if="v.id === savedVersionId"
+                class="btn btn-link btn-sm p-0 ms-2"
+                disabled
+              >
+                已保存
+              </button>
+              <button
+                v-else
+                class="btn btn-link btn-sm p-0 ms-2"
+                @click="$emit('save', v)"
+              >
+                保存为我的Bot
+              </button>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -52,8 +68,10 @@ export default {
   props: {
     versions: { type: Array, default: () => [] },
     bestVersionId: { default: null },
+    canSave: { type: Boolean, default: false },
+    savedVersionId: { default: null },
   },
-  emits: ["view"],
+  emits: ["view", "save"],
   setup(props) {
     const isBest = (id) => props.bestVersionId != null && id === props.bestVersionId;
     const pct = (v) => (v == null ? null : v * 100);

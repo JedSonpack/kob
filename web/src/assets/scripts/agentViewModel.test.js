@@ -2,9 +2,11 @@ import { describe, expect, test } from "vitest";
 import {
   buildLineDiff,
   buildTimeline,
+  canShowHiddenMetrics,
   displayVersions,
   formatMetric,
   isTerminal,
+  representativeReplays,
 } from "./agentViewModel";
 
 describe("agentViewModel", () => {
@@ -88,5 +90,30 @@ describe("agentViewModel", () => {
     const diff = buildLineDiff("", "a\nb");
     expect(diff.added).toBe(2);
     expect(diff.removed).toBe(0);
+  });
+
+  test("只在终态展示隐藏指标", () => {
+    expect(canShowHiddenMetrics({ status: "EVALUATING" })).toBe(false);
+    expect(canShowHiddenMetrics({ status: "COMPLETED" })).toBe(true);
+    expect(canShowHiddenMetrics(null)).toBe(false);
+  });
+
+  test("优先选取失败和成功各一条代表录像", () => {
+    const runs = [
+      { id: 1, result: "WIN", opponentKey: "greedy" },
+      { id: 2, result: "WIN", opponentKey: "territory" },
+      { id: 3, result: "LOSS", opponentKey: "safe" },
+      { id: 4, result: "DRAW", opponentKey: "greedy" },
+    ];
+    const selected = representativeReplays(runs);
+    expect(selected.filter((run) => run.result === "LOSS")).toHaveLength(1);
+    expect(selected.filter((run) => run.result === "WIN")).toHaveLength(1);
+    expect(selected).toHaveLength(2);
+  });
+
+  test("没有胜负录像时返回空", () => {
+    expect(representativeReplays([{ id: 1, result: "DRAW" }])).toEqual([]);
+    expect(representativeReplays([])).toEqual([]);
+    expect(representativeReplays(null)).toEqual([]);
   });
 });

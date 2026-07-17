@@ -42,6 +42,25 @@ export function isTerminal(status) {
   return TERMINAL_STATUSES.includes(status);
 }
 
+/** 隐藏集聚合指标仅终态可展示，运行中不得渲染或缓存。 */
+export function canShowHiddenMetrics(task) {
+  return !!(task && task.status && isTerminal(task.status));
+}
+
+/**
+ * 从代表性录像摘要中优先选取失败和成功各一条，供 Replay 面板入口。
+ * 没有 WIN 或 LOSS 时对应类型缺省，全为 DRAW 时返回空。
+ */
+export function representativeReplays(runs) {
+  if (!Array.isArray(runs)) return [];
+  const win = runs.find((run) => run && run.result === "WIN");
+  const loss = runs.find((run) => run && run.result === "LOSS");
+  const selected = [];
+  if (win) selected.push(win);
+  if (loss) selected.push(loss);
+  return selected;
+}
+
 function hasPublicEvaluation(version) {
   if (version.publicEvaluation != null) return true;
   // 阶段 3 真实 DTO 将公开评测扁平化为 publicGameCount/publicScore/publicP95Ms。
