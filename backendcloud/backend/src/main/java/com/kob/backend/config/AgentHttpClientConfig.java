@@ -22,4 +22,14 @@ public class AgentHttpClientConfig {
         factory.setReadTimeout(readTimeout);
         return new RestTemplate(factory);
     }
+
+    @Bean("agentLlmRestTemplate")
+    public RestTemplate agentLlmRestTemplate(
+            @Value("${kob.agent.llm.connect-timeout-ms:5000}") int connectTimeout,
+            @Value("${kob.agent.llm.read-timeout-ms:60000}") int readTimeout) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeout);
+        factory.setReadTimeout(readTimeout);
+        return new RestTemplate(factory);
+    }
 }

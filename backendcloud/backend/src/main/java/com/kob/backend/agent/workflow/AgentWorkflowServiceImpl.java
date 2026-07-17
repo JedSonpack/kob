@@ -260,9 +260,13 @@ public class AgentWorkflowServiceImpl implements AgentWorkflowService {
 
     private void failTask(AgentTask task, RuntimeException e) {
         AgentErrorCode code = AgentErrorCode.EVALUATION_TIMEOUT;
-        Throwable cause = e.getCause();
-        if (cause instanceof java.util.concurrent.TimeoutException) {
-            code = AgentErrorCode.LLM_TIMEOUT;
+        if (e instanceof com.kob.backend.agent.llm.AgentLlmException) {
+            code = ((com.kob.backend.agent.llm.AgentLlmException) e).getCode();
+        } else {
+            Throwable cause = e.getCause();
+            if (cause instanceof java.util.concurrent.TimeoutException) {
+                code = AgentErrorCode.LLM_TIMEOUT;
+            }
         }
         taskRepository.transition(task, AgentTaskStatus.FAILED, null, null, code, e.getMessage(), true);
     }
