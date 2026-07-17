@@ -76,4 +76,16 @@ class AgentTaskControllerTest {
         mockMvc.perform(get("/api/agent/tasks/1/"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void getRunningTaskDetailOmitsNullHiddenEvaluation() throws Exception {
+        AgentTaskDetailDto detail = new AgentTaskDetailDto();
+        detail.setStatus("GENERATING");
+        when(service.getTaskDetail(org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(detail);
+
+        mockMvc.perform(get("/api/agent/tasks/1/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hiddenEvaluation").doesNotHaveJsonPath());
+    }
 }

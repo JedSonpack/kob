@@ -4,6 +4,7 @@ import com.kob.backend.agent.model.AgentStep;
 import com.kob.backend.agent.model.AgentTask;
 import com.kob.backend.agent.tool.EvaluationAggregate;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,8 @@ public class AgentTaskDetailDto {
     private List<AgentVersionDetailDto> versions;
     private List<AgentStep> steps;
     private EvaluationAggregate publicEvaluation;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EvaluationAggregate hiddenEvaluation;
     // 代表性录像摘要，仅在任务终态填充，供前端 Replay 面板选择 WIN/LOSS 各一条。
     private List<AgentRunSummaryDto> representativeRuns;
