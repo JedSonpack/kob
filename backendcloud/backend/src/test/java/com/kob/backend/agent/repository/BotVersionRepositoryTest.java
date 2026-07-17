@@ -7,8 +7,10 @@ import com.kob.backend.agent.model.BotVersion;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -74,6 +76,19 @@ class BotVersionRepositoryTest {
         BotVersion v = version(1, 1, null);
         assertDoesNotThrow(() -> repo.save(v));
         verify(vm).insert(v);
+    }
+
+    @Test
+    void fillsMissingCreatedAtBeforeInsert() {
+        BotVersionMapper vm = mock(BotVersionMapper.class);
+        doAnswer(invocation -> {
+            BotVersion inserted = invocation.getArgument(0);
+            assertNotNull(inserted.getCreatedAt());
+            return 1;
+        }).when(vm).insert(any(BotVersion.class));
+        BotVersionRepository repo = new BotVersionRepository(vm, mock(EvaluationRunMapper.class));
+
+        repo.save(version(1, 1, null));
     }
 
     @Test

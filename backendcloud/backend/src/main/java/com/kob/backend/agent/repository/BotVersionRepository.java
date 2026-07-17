@@ -7,6 +7,7 @@ import com.kob.backend.agent.model.BotVersion;
 import com.kob.backend.agent.model.EvaluationRun;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,6 +57,9 @@ public class BotVersionRepository {
             if (count == null || count == 0) {
                 throw new IllegalStateException("父版本未完成公开评测");
             }
+        }
+        if (version.getCreatedAt() == null) {
+            version.setCreatedAt(new Date());
         }
         mapper.insert(version);
         return version;
