@@ -44,6 +44,7 @@ public class AgentWorkflowServiceImpl implements AgentWorkflowService {
     private final AgentToolRouter toolRouter;
     private final BestVersionSelector bestVersionSelector;
     private final long maxP95Ms;
+    private AgentWorkflowExecutor executor;
 
     public AgentWorkflowServiceImpl(AgentTaskRepository taskRepository,
                                     BotVersionRepository versionRepository,
@@ -59,6 +60,11 @@ public class AgentWorkflowServiceImpl implements AgentWorkflowService {
         this.toolRouter = toolRouter;
         this.bestVersionSelector = bestVersionSelector;
         this.maxP95Ms = maxP95Ms;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setAgentWorkflowExecutor(AgentWorkflowExecutor executor) {
+        this.executor = executor;
     }
 
     @Override
@@ -86,14 +92,32 @@ public class AgentWorkflowServiceImpl implements AgentWorkflowService {
 
     @Override
     public void resumeIncompleteTasks() {
+        if (executor == null) {
+            return;
+        }
         for (AgentTask task : taskRepository.findIncompleteTasks()) {
-            // 实际提交由 AgentWorkflowExecutor 负责；此处仅占位以满足接口
+            executor.submit(task.getId());
         }
     }
 
     @Override
     public void cancelTask(Long taskId, Integer userId) {
-        // 取消由 AgentWorkflowExecutor 协调；此处仅占位
+        AgentTask task = taskRepository.findById(taskId);
+        if (task == null || userId != null && !userId.equals(task.getUserId())) {
+            return;
+        }
+        if (AgentTaskStatus.valueOf(task.getStatus()).isTerminal()) {
+            return;
+        }
+        BotVersion current = findCurrentVersion(task);
+        if (current != null) {
+            toolRouter.cancel(taskId, current.getId(), DatasetType.PUBLIC);
+        }
+        taskRepository.transition(task, AgentTaskStatus.CANCELLED, null, null,
+                AgentErrorCode.TASK_CANCELLED, null, true);
+        if (executor != null) {
+            executor.cancel(taskId);
+        }
     }
 
     private void dispatch(AgentTask task, AgentTaskStatus status) {
