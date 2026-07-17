@@ -17,4 +17,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <!-- game-core 是共享库无主类，跳过父 pom 继承的 spring-boot repackage，
+                 否则 mvn install 在 package 阶段失败，backend spring-boot:run 无法解析依赖。 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
