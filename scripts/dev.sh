@@ -23,6 +23,11 @@ WEB_PORT=${WEB_PORT:-8080}
 START_TIMEOUT=${START_TIMEOUT:-60}
 STOP_TIMEOUT=${STOP_TIMEOUT:-10}
 
+# Agent Lab LLM：默认 fake，保证自动化 E2E 不调真实模型、不消耗线上 Token；
+# 切真实模型时用环境变量覆盖（openai-compatible + base-url + model + api-key）。
+KOB_AGENT_LLM_PROVIDER=${KOB_AGENT_LLM_PROVIDER:-fake}
+export KOB_AGENT_LLM_PROVIDER
+
 SERVICE_NAMES=(backend matching bot web)
 STARTED_SERVICES=()
 
