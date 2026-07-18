@@ -5,7 +5,7 @@
 
 ## 1. 实验固定条件
 
-- 策略目标（三次实验保持一致）：
+- 策略目标（所有实验保持一致）：
 
   ```text
   尽量扩大可活动区域，避免进入狭窄通道；在多个安全方向中优先保留后续选择。
@@ -15,7 +15,7 @@
 - 隐藏验证集：4 个固定地图种子，共 24 局；仅在公开集迭代结束后运行，结果不进入模型上下文。
 - 评测配置：`kob.agent.evaluation.max-p95-ms=100`，合法移动率必须为 100% 才进入隐藏验证。
 - 最大迭代轮数：3，每轮最多 2 次编译尝试。
-- 评测规模、基准策略、数据集在三次实验中不得改动。
+- 至少运行 3 次；评测规模、基准策略、数据集在各次实验中不得改动。
 
 ## 2. 每次实验需记录
 
@@ -38,7 +38,7 @@
 
 ## 4. 结论判定
 
-- 三次中至少两次同方向改善（隐藏集相对 V1 提升），才描述为「可重复提升」。
+- 至少 3 次实验中有至少两次同方向改善（隐藏集相对 V1 提升），才描述为「可重复提升」。
 - 写中位数与波动范围，不写单次最优。
 - 没有稳定提升：写「系统保留旧版本，并通过隐藏集避免伪优化」。
 - 某次失败：保留失败原因，作为可靠性案例，不抹除。
@@ -46,14 +46,15 @@
 ## 5. 安全约束
 
 - `KOB_AGENT_LLM_API_KEY` 只从环境变量读取，不写入任何 Markdown、日志摘要或 Git 文件。
-- 提交前扫描：`rg -n "KOB_AGENT_LLM_API_KEY|Authorization: Bearer [A-Za-z0-9]" readme.md docs backendcloud web scripts`。
-- 真实模型实验与自动化 E2E 互斥：E2E 必须用 `KOB_AGENT_LLM_PROVIDER=fake`，不得消耗线上 Token。
+- 提交前扫描：`rg -n "sk-ant-[A-Za-z0-9_-]{10,}|Authorization: Bearer [A-Za-z0-9]" readme.md docs backendcloud web scripts`。
+- CI 和日常自动化回归必须使用 `KOB_AGENT_LLM_PROVIDER=fake`。受控真实实验可以复用浏览器脚本，但必须显式设置真实 Provider、延长超时、关闭服务并保存实验记录，不能进入默认测试命令。
 
 ## 6. 运行步骤
 
 ```bash
-export KOB_AGENT_LLM_PROVIDER=openai-compatible
-export KOB_AGENT_LLM_BASE_URL=https://api.openai.com
+export KOB_AGENT_LLM_PROVIDER=anthropic-messages
+export KOB_AGENT_LLM_BASE_URL=https://gateway.example.com
+export KOB_AGENT_LLM_PATH=/v1/messages
 export KOB_AGENT_LLM_MODEL=<实际可用模型>
 export KOB_AGENT_LLM_API_KEY=<本地密钥，不入库>
 

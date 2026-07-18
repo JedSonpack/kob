@@ -1,12 +1,14 @@
 # KOB Agent Lab 总实施计划
 
+> **完成状态（2026-07-18）：** 阶段 1～4 均已完成并通过最终门禁。后端 177 项、前端 37 项、脚本测试、两类 Playwright 与 5 次真实 Anthropic Messages 实验均已有证据；真实闭环已走通，但没有测得可重复策略提升。
+
 > **面向智能体工作者：** 必需子技能：使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 逐项实施此计划。步骤使用复选框（`- [ ]`）语法跟踪。
 
 **目标：** 将已评审的 KOB Agent Lab 设计拆成 4 个可独立实现、验证和交接的阶段，使不同模型可以按顺序完成代码实现。
 
 **架构：** 先抽取无 Spring 依赖的 `game-core`，再由 `botrunningsystem` 构建可信评测协调器和持久沙箱，随后在 `backend` 中实现可恢复的 Agent Workflow，最后交付 `/agent-lab/` 页面、端到端测试和面试材料。阶段之间只通过本计划声明的 Java 接口、HTTP DTO 和数据库契约连接。
 
-**技术栈：** Java 8、Spring Boot 2.4.5、MyBatis-Plus 3.5.1、MySQL 8.0、Vue 3、Vuex 4、Vitest、Playwright、OpenAI-compatible HTTP API
+**技术栈：** Java 8、Spring Boot 2.4.5、MyBatis-Plus 3.5.1、MySQL 8.0、Vue 3、Vuex 4、Vitest、Playwright、OpenAI-compatible 与 Anthropic Messages HTTP API
 
 ## 全局约束
 
@@ -25,7 +27,7 @@
 - 新版本相对 V1 的隐藏集得分退化超过 5% 时保留 V1。
 - 同一用户只允许一个运行中任务；终态任务允许保留多个。
 - Agent 任务执行线程池固定最大并发为 2。
-- 当前工作区存在用户未提交的前端修改；实施者必须先运行 `git status --short`，不得覆盖或回退这些修改。
+- 当前工作区保留用户对 `backendcloud/botrunningsystem/input.txt` 的删除；实施者不得在测试后误提交该运行时文件。
 - 所有提交必须遵守仓库 `AGENTS.md` 中的 Lore Commit Protocol，并包含实际 `Tested:` 与 `Not-tested:`。
 
 ---
@@ -246,13 +248,13 @@ sed -n '1,360p' docs/superpowers/plans/2026-07-16-kob-agent-lab-01-game-core.md
 
 ## 最终完成定义
 
-- [ ] 4 份阶段计划的所有任务均已完成并独立提交。
-- [ ] `backendcloud` 全量 Maven 测试通过。
-- [ ] `web` 的 `npm test`、`npm run lint` 与 `npm run build` 通过。
-- [ ] 现有 `scripts/tests/battle_playwright.js` 继续通过。
-- [ ] 新增 `scripts/tests/agent_lab_playwright.js` 通过完整 Fake LLM 闭环。
-- [ ] 取消、超时和失败路径均确认无残留子进程与临时目录。
-- [ ] 运行中任务与模型上下文中不存在隐藏集数据。
-- [ ] 本地一键启动可以拉起 MySQL、3 个 Java 服务和 Web 前端。
-- [ ] 完成至少 3 次真实模型实验，原始结果保存到 `docs/agent-lab/experiments/`。
-- [ ] README、90 秒演示视频脚本、架构图、面试问答和简历 bullet 使用真实测试与实验数据。
+- [x] 4 份阶段计划的所有任务均已完成并独立提交。
+- [x] `backendcloud` 全量 Maven 测试通过。
+- [x] `web` 的 `npm test`、`npm run lint` 与 `npm run build` 通过。
+- [x] 现有 `scripts/tests/battle_playwright.js` 继续通过。
+- [x] 新增 `scripts/tests/agent_lab_playwright.js` 通过完整 Fake LLM 闭环。
+- [x] 取消、超时和失败路径均确认无残留子进程与临时目录。
+- [x] 运行中任务与模型上下文中不存在隐藏集数据。
+- [x] 本地一键启动可以拉起 MySQL、3 个 Java 服务和 Web 前端。
+- [x] 完成至少 3 次真实模型实验，原始结果保存到 `docs/agent-lab/experiments/`。
+- [x] README、90 秒演示视频脚本、架构图、面试问答和简历 bullet 使用真实测试与实验数据。

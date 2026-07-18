@@ -1,5 +1,9 @@
 # KOB Agent Lab Anthropic 接入与阶段 4 收尾实施计划
 
+> **完成状态（2026-07-18）：** 任务 1～4 已完成。Anthropic Messages 客户端、真实实验超时覆盖、Fake 回归、5 次真实实验、交付文档和最终全量验收均已落地；真实任务 #16 与 Fake 任务 #17 完成三轮闭环。实验没有证明策略可重复提升，失败调用 Token 未落入失败 Step 与生产容器沙箱列为后续风险。
+
+> 正文复选框保留为实施时的原始 TDD 模板，未逐项回填；完成结论以本段、Git 提交和总计划验收清单为准。
+
 > **面向智能体工作者：** 必需子技能：使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 逐项实施此计划。步骤使用复选框（`- [ ]`）语法跟踪。
 
 **目标：** 用现有 Java 8 技术栈接入 Anthropic Messages API，完成 3 次真实模型实验和阶段 4 最终验收。

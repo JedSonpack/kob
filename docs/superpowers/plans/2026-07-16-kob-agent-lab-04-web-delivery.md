@@ -1,6 +1,8 @@
 # KOB Agent Lab 阶段 4：Web 工作台与面试交付实施计划
 
-> **执行进度（2026-07-17）：** 任务 1～4 已独立提交；任务 5 的首次 Fake LLM、现有对战和开发脚本验收已通过，审查后的安全修复与轻量回归 6/6 已通过，但最新网络 E2E 复验和修复提交受当前沙箱审批额度限制；任务 6 文档已完成并通过独立审查，尚未提交；任务 7 因真实模型 Base URL、模型名和 API Key 未配置而未开始。继续执行时不得把修复前的完整 E2E 证据写成最新脚本的 GREEN，也不得在完成 3 次真实实验前填写提升结论。
+> **完成状态（2026-07-18）：** 任务 1～7 已完成。最终证据为后端 177 项、前端 37 项、开发脚本行为测试、对战 Playwright 3/3、Fake Agent Lab 任务 #17，以及真实 Anthropic Messages 任务 #12～#16。#16 完成三轮闭环，但隐藏集没有相对 V1 提升，因此交付材料不声称可重复提升。
+
+> 正文复选框保留为实施时的原始 TDD 模板，未逐项回填；完成结论以本段、Git 提交和总计划验收清单为准。
 
 > **面向智能体工作者：** 必需子技能：使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 逐项实施此计划。步骤使用复选框（`- [ ]`）语法跟踪。
 
@@ -728,8 +730,9 @@ git commit -m "docs(Agent Lab): 提供可复现演示与实验口径"
 在未入库的本地配置或环境变量中设置：
 
 ```bash
-export KOB_AGENT_LLM_PROVIDER=openai-compatible
-export KOB_AGENT_LLM_BASE_URL=https://api.openai.com
+export KOB_AGENT_LLM_PROVIDER=anthropic-messages
+export KOB_AGENT_LLM_BASE_URL=https://gateway.example.com
+export KOB_AGENT_LLM_PATH=/v1/messages
 export KOB_AGENT_LLM_MODEL=<实际可用模型>
 export KOB_AGENT_LLM_API_KEY=<本地密钥>
 ```
