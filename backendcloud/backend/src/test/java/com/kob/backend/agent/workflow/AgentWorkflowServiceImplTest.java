@@ -6,7 +6,9 @@ import com.kob.backend.agent.llm.LlmContext;
 import com.kob.backend.agent.llm.LlmDecision;
 import com.kob.backend.agent.llm.LlmDecisionValidator;
 import com.kob.backend.agent.llm.LlmStepExecutor;
+import com.kob.backend.agent.model.AgentAction;
 import com.kob.backend.agent.model.AgentTask;
+import com.kob.backend.agent.model.AgentTaskStatus;
 import com.kob.backend.agent.model.BotVersion;
 import com.kob.backend.agent.model.DatasetType;
 import com.kob.backend.agent.tool.AgentToolRouter;
@@ -76,7 +78,19 @@ class AgentWorkflowServiceImplTest {
         }
     }
 
-    private AgentWorkflowServiceImpl wire(InMemoryAgentRepositories repos, RecordingLlm llm) {
+    private static class NeverFinishingLlm implements LlmClient {
+        int calls;
+
+        @Override
+        public LlmDecision decide(LlmContext context) {
+            calls++;
+            AgentAction action = context.getStatus() == AgentTaskStatus.GENERATING
+                    ? AgentAction.GENERATE_CODE : AgentAction.IMPROVE_CODE;
+            return new LlmDecision(action, "s", "r", "code", 1, 1);
+        }
+    }
+
+    private AgentWorkflowServiceImpl wire(InMemoryAgentRepositories repos, LlmClient llm) {
         LlmStepExecutor executor = new LlmStepExecutor(llm, new LlmDecisionValidator(),
                 repos.versionRepository, repos.stepRepository);
         return new AgentWorkflowServiceImpl(repos.taskRepository, repos.versionRepository,
@@ -132,5 +146,21 @@ class AgentWorkflowServiceImplTest {
                 .collect(Collectors.toList());
         assertEquals(1, successVersions.size());
         assertEquals(1, successVersions.get(0).getIteration());
+    }
+
+    @Test
+    void maxIterationsForcesValidationEvenWhenModelWouldKeepImproving() {
+        InMemoryAgentRepositories repos = new InMemoryAgentRepositories();
+        NeverFinishingLlm llm = new NeverFinishingLlm();
+        AgentWorkflowServiceImpl workflow = wire(repos, llm);
+        AgentTask task = newTask(1);
+        repos.taskRepository.seed(task);
+
+        workflow.runTask(task.getId());
+
+        AgentTask done = repos.taskRepository.findById(task.getId());
+        assertEquals("COMPLETED", done.getStatus());
+        assertEquals(1, repos.versionRepository.findByTask(task.getId()).size());
+        assertEquals(1, llm.calls);
     }
 }

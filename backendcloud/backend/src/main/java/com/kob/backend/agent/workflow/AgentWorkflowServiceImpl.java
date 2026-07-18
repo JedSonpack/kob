@@ -201,6 +201,12 @@ public class AgentWorkflowServiceImpl implements AgentWorkflowService {
     }
 
     private void decideNextAction(AgentTask task) {
+        if (task.getCurrentIteration() != null && task.getMaxIterations() != null
+                && task.getCurrentIteration() >= task.getMaxIterations()) {
+            taskRepository.transition(task, AgentTaskStatus.VALIDATING,
+                    null, null, null, null, false);
+            return;
+        }
         BotVersion version = findCurrentVersion(task);
         EvaluationAggregate publicEval = toolRouter.evaluate(task, version, DatasetType.PUBLIC);
         LlmContext context = buildContext(task, AgentTaskStatus.ANALYZING, version, publicEval, null);
