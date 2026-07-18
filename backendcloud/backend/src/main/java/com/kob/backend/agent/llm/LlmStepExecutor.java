@@ -1,12 +1,16 @@
 package com.kob.backend.agent.llm;
 
 import com.kob.backend.agent.model.AgentAction;
+import com.kob.backend.agent.model.AgentErrorCode;
 import com.kob.backend.agent.model.AgentStep;
 import com.kob.backend.agent.model.AgentTask;
 import com.kob.backend.agent.model.BotVersion;
 import com.kob.backend.agent.repository.AgentStepRepository;
 import com.kob.backend.agent.repository.BotVersionRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * LLM Step 执行器：幂等键 task:{taskId}:phase:{status}:iteration:{iteration}:llm；
@@ -16,6 +20,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class LlmStepExecutor {
+
+    private static final int MAX_DECISION_ATTEMPTS = 2;
 
     private final LlmClient llmClient;
     private final LlmDecisionValidator validator;
@@ -37,9 +43,54 @@ public class LlmStepExecutor {
         if (existing != null && "SUCCESS".equals(existing.getStatus())) {
             return recover(existing);
         }
-        LlmDecision decision = llmClient.decide(context);
-        validator.validate(context.getStatus(), decision);
+        LlmDecision decision = decideValid(context);
         return persist(task, context, decision, versionIteration, attempt, parentVersionId, key);
+    }
+
+    private LlmDecision decideValid(LlmContext context) {
+        LlmContext attemptContext = context;
+        Integer promptTokens = null;
+        Integer completionTokens = null;
+        for (int attempt = 0; attempt < MAX_DECISION_ATTEMPTS; attempt++) {
+            LlmDecision decision = llmClient.decide(attemptContext);
+            promptTokens = addUsage(promptTokens, decision.getPromptTokens());
+            completionTokens = addUsage(completionTokens, decision.getCompletionTokens());
+            try {
+                validator.validate(context.getStatus(), decision);
+                return withUsage(decision, promptTokens, completionTokens);
+            } catch (IllegalArgumentException validationError) {
+                if (attempt == MAX_DECISION_ATTEMPTS - 1) {
+                    throw new AgentLlmException(AgentErrorCode.LLM_INVALID_RESPONSE,
+                            "LLM 决策校验重试耗尽: " + validationError.getMessage());
+                }
+                attemptContext = withValidationFeedback(attemptContext, validationError.getMessage());
+            }
+        }
+        throw new IllegalStateException("LLM 决策校验重试耗尽");
+    }
+
+    private LlmContext withValidationFeedback(LlmContext context, String error) {
+        List<String> failures = new ArrayList<>();
+        if (context.getFailureSummaries() != null) {
+            failures.addAll(context.getFailureSummaries());
+        }
+        failures.add("上次决策校验失败：" + error + "。请修正后重新调用 submit_decision。");
+        return new LlmContext(context.getTaskId(), context.getStatus(), context.getGoal(),
+                context.getIteration(), context.getMaxIterations(), context.getCurrentSourceCode(),
+                context.getCompileError(), context.getPublicEvaluation(), failures,
+                context.getPreviousChangeSummary());
+    }
+
+    private Integer addUsage(Integer total, Integer usage) {
+        if (usage == null) {
+            return total;
+        }
+        return (total == null ? 0 : total) + usage;
+    }
+
+    private LlmDecision withUsage(LlmDecision decision, Integer promptTokens, Integer completionTokens) {
+        return new LlmDecision(decision.getAction(), decision.getStrategySummary(),
+                decision.getChangeReason(), decision.getSourceCode(), promptTokens, completionTokens);
     }
 
     private LlmStepResult persist(AgentTask task, LlmContext context, LlmDecision decision,
