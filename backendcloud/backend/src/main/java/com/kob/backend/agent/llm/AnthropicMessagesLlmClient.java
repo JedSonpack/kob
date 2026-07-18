@@ -28,12 +28,14 @@ import org.springframework.web.client.RestTemplate;
 public class AnthropicMessagesLlmClient implements LlmClient {
 
     private static final String DECISION_TOOL = "submit_decision";
+    private static final int MAX_SOURCE_LENGTH = 10000;
     private static final String SYSTEM_PROMPT =
             "你是 KOB Agent Lab 的 Java Bot 生成器。必须调用 submit_decision 工具返回决策。" +
             "允许动作只有 GENERATE_CODE、REPAIR_CODE、" +
             "IMPROVE_CODE、FINISH。状态约束：GENERATING 必须返回 GENERATE_CODE；" +
             "REPAIRING 必须返回 REPAIR_CODE；IMPROVING 必须返回 IMPROVE_CODE；" +
-            "ANALYZING 只能返回 IMPROVE_CODE 或 FINISH。源码必须是完整 com.kob.test.Bot，并提供 " +
+            "ANALYZING 只能返回 IMPROVE_CODE 或 FINISH。源码不得超过 10000 字符，必须是完整 " +
+            "com.kob.test.Bot，并提供 " +
             "public Integer nextMove(String input)。不得返回 Markdown、Shell 命令、网络请求或文件操作。";
 
     private final RestTemplate restTemplate;
@@ -151,7 +153,9 @@ public class AnthropicMessagesLlmClient implements LlmClient {
                 "GENERATE_CODE", "REPAIR_CODE", "IMPROVE_CODE", "FINISH"));
         properties.put("strategySummary", stringProperty("当前策略摘要"));
         properties.put("changeReason", stringProperty("本次决策或修改原因"));
-        properties.put("sourceCode", stringProperty("完整 Java Bot 源码；FINISH 时可以省略"));
+        JSONObject sourceCode = stringProperty("不超过 10000 字符的完整 Java Bot 源码；FINISH 时可以省略");
+        sourceCode.put("maxLength", MAX_SOURCE_LENGTH);
+        properties.put("sourceCode", sourceCode);
         schema.put("properties", properties);
         JSONArray required = new JSONArray();
         required.add("action");
